@@ -1,0 +1,7 @@
+# Internal working notes — never publish (customer names, case numbers, internal paths)
+internal/
+next-prompt.md
+PROJECT.md
+
+# plugin eval run output
+plugins/*/evals/results/

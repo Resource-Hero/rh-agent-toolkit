@@ -1,0 +1,20 @@
+{
+  "name": "rh-connect",
+  "displayName": "Resource Hero Setup",
+  "version": "1.0.0",
+  "description": "Connect Claude to Resource Hero: the admin setup for the Resource Hero MCP extension and its Resource Hero User MCP server, the one command each user runs to add that server to Claude Code, and sign-in troubleshooting. Installed with rh-user.",
+  "author": {
+    "name": "Resource Hero",
+    "url": "https://www.resourceheroapp.com"
+  },
+  "homepage": "https://www.resourceheroapp.com",
+  "repository": "https://github.com/Resource-Hero/rh-agent-toolkit",
+  "license": "MIT",
+  "keywords": [
+    "resource-hero",
+    "salesforce",
+    "mcp",
+    "setup"
+  ],
+  "privacyPolicyUrl": "https://www.resourceheroapp.com/privacy-policy/"
+}

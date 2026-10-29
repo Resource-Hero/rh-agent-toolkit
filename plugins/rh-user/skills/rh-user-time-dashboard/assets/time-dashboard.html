@@ -1,0 +1,1654 @@
+<title>My time and timers</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+/* Layout: Resource Hero palette. A deep navy header band (greeting, days off, timer) over a cool ground; below, one timesheet card: week heading, colored tiles, a teal heat-map grid, then the entries ledger. */
+:root {
+  --bg: #e9f0f2; --surface: #fcfdfd; --surface-2: #f2ebe6; --ink: #2f3436; --muted: #5b676b; --line: #dbe4e7;
+  --navy: #0e4858; --navy-2: #0a3a47; --on-navy: #f2ebe6; --on-navy-2: #badce3;
+  --accent: #0f7a90; --accent-ink: #ffffff; --accent-soft: #dff0f4; --teal: #1695ae;
+  --pop: #fd8e25; --pop-ink: #9a4a00; --pop-soft: #fff1e3;
+  --plan-soft: #e6eef0; --plan-ink: #0e4858;
+  --danger: #a44a3c; --danger-soft: #f6e4e0; --off: #6f5800; --off-soft: #faf2d4;
+  --s-hol: #62b062; --s-off: #e3c336; --now: #eaf4f6; --grid: #e2eaec;
+  --h1: #e3f2f6; --h2: #c3e4ec; --h3: #92cddb; --h4: #5cb3c8; --h-ink: #0e3c48;
+  --shadow: 0 1px 2px rgb(14 72 88 / .06), 0 6px 20px rgb(14 72 88 / .06);
+  --font-display: "Lato", Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --font-body: "Lato", Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --font-num: "Lato", Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0b1e24; --surface: #11282f; --surface-2: #17323a; --ink: #e6eef0; --muted: #9db3b9; --line: #24434c;
+  --navy: #0e4858; --navy-2: #0a3a47; --on-navy: #f2ebe6; --on-navy-2: #badce3;
+  --accent: #4fc0d8; --accent-ink: #072a33; --accent-soft: #163e48; --teal: #1695ae;
+  --pop: #fd8e25; --pop-ink: #ffb26b; --pop-soft: #3a2a1a;
+  --plan-soft: #173a44; --plan-ink: #badce3;
+  --danger: #f0907d; --danger-soft: #3a211b; --off: #ecd27a; --off-soft: #352d14;
+  --s-hol: #62b062; --s-off: #e3c336; --now: #133740; --grid: #1d3a42;
+  --h1: #15404a; --h2: #1a5562; --h3: #1f6e80; --h4: #2a8aa0; --h-ink: #f2fbfd;
+  --shadow: 0 1px 2px rgb(0 0 0 / .3); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0b1e24; --surface: #11282f; --surface-2: #17323a; --ink: #e6eef0; --muted: #9db3b9; --line: #24434c;
+  --navy: #0e4858; --navy-2: #0a3a47; --on-navy: #f2ebe6; --on-navy-2: #badce3;
+  --accent: #4fc0d8; --accent-ink: #072a33; --accent-soft: #163e48; --teal: #1695ae;
+  --pop: #fd8e25; --pop-ink: #ffb26b; --pop-soft: #3a2a1a;
+  --plan-soft: #173a44; --plan-ink: #badce3;
+  --danger: #f0907d; --danger-soft: #3a211b; --off: #ecd27a; --off-soft: #352d14;
+  --s-hol: #62b062; --s-off: #e3c336; --now: #133740; --grid: #1d3a42;
+  --h1: #15404a; --h2: #1a5562; --h3: #1f6e80; --h4: #2a8aa0; --h-ink: #f2fbfd;
+  --shadow: 0 1px 2px rgb(0 0 0 / .3); color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 32px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 900; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h1 { font-size: clamp(26px, 5vw, 34px); line-height: 1.1; }
+h2 { font-size: 20px; color: var(--plan-ink); }
+h3 { font-size: 17px; color: var(--plan-ink); }
+.lbl { color: var(--muted); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 500; }
+.sub { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+
+/* greeting */
+.hello { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-top: 16px; padding: 22px 24px; border-radius: 20px;
+  background: radial-gradient(120% 140% at 0% 0%, rgb(22 149 174 / .45), transparent 55%), var(--navy); color: var(--on-navy); box-shadow: var(--shadow); }
+.hello h1 { color: var(--on-navy); }
+.hello .upbox, .hello .timerbox { color: var(--ink); }
+.hello .date { color: var(--on-navy-2); font-size: 13px; margin-top: 4px; }
+.hello .uptodate { color: var(--on-navy-2); }
+.hello #refreshAll { background: transparent; border-color: rgb(186 220 227 / .45); color: var(--on-navy); }
+.hello #refreshAll:hover { border-color: var(--on-navy); }
+.hello-right { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; min-width: 0; }
+.fresh { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.uptodate { color: var(--muted); font-size: 12.5px; }
+
+/* buttons */
+.primary { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 8px 18px; font-weight: 600; }
+.primary:hover { filter: brightness(1.06); }
+.primary[disabled], .danger[disabled], .ghost[disabled] { opacity: .55; cursor: default; }
+.ghost { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: 13px; }
+.ghost:hover { border-color: var(--accent); color: var(--accent); }
+.danger { background: var(--danger); color: var(--surface); border: 0; border-radius: 999px; padding: 7px 14px; font-weight: 600; }
+.linkbtn { background: none; border: 0; padding: 6px 4px; color: var(--danger); margin-left: auto; }
+.seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: none; border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--muted); }
+.seg button:hover { color: var(--ink); }
+.seg button[disabled] { background: var(--accent); color: var(--accent-ink); font-weight: 700; box-shadow: var(--shadow); cursor: default; }
+.seg { background: var(--accent-soft); }
+
+/* cards & grid */
+.grid { display: flex; flex-direction: column; gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sechead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+
+/* this week tiles */
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 420px) { .tile .tv { font-size: 24px; } .tile { padding: 8px; } }
+.tile { padding: 10px 12px; border-radius: 12px; border: 1px solid transparent; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tile .tv { font-family: var(--font-display); font-size: 30px; font-weight: 500; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tile .tv small { font-family: var(--font-body); font-size: 13px; color: var(--muted); margin-left: 3px; }
+.tile .lbl { order: 2; text-transform: none; letter-spacing: 0; font-size: 12.5px; }
+.tile .tnote { order: 3; color: var(--muted); font-size: 12px; }
+.tile { background: var(--plan-soft); }
+.tile .tv { color: var(--plan-ink); }
+.tile.logged { background: var(--accent-soft); }
+.tile.logged .tv { color: var(--accent); }
+.tile.key { background: var(--pop-soft); border-color: var(--pop); }
+.tile.key .tv, .tile.key .lbl { color: var(--pop-ink); }
+.bar { order: 4; height: 6px; border-radius: 999px; background: rgb(15 122 144 / .15); overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--teal); transition: width .5s; }
+
+/* tables */
+.tablewrap { overflow-x: auto; margin-top: 8px; }
+.tablewrap table { border-collapse: collapse; font-size: 12.5px; width: 100%; }
+.tablewrap th, .tablewrap td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tablewrap th:first-child, .tablewrap td:first-child { text-align: left; }
+.tablewrap th { color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.tablewrap tr.now td { font-weight: 600; background: var(--now); }
+
+/* upcoming days off */
+.upbox { width: min(100%, 300px); min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+.upbox .lbl { color: var(--accent); font-size: 10.5px; font-weight: 900; }
+.uplist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 8px max-content minmax(0, 1fr) max-content max-content; gap: 5px 8px; align-items: center; font-size: 12.5px; }
+.uplist li { display: contents; }
+.uplist li.empty, .uplist li.wide { display: block; grid-column: 1 / -1; }
+.uplist .kd { width: 8px; height: 8px; border-radius: 2px; background: var(--s-hol); }
+.uplist .kd.off { background: var(--s-off); }
+.uplist .d { color: var(--muted); font-variant-numeric: tabular-nums; }
+.uplist .n { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.uplist .c { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.uplist .c.soon { color: var(--danger); }
+.textbtn { background: none; border: 0; padding: 0; color: var(--accent); font-size: 12.5px; }
+.textbtn:hover { text-decoration: underline; }
+@media (max-width: 640px) { .upbox { width: 100%; } }
+/* Coming up and the timer share one row, equal height; the pair drops under the greeting when the row is too narrow for both. */
+@media (min-width: 760px) {
+  .hello-right { flex-wrap: nowrap; align-items: stretch; }
+  .upbox { flex: 0 0 280px; width: auto; }
+  .timerbox { flex: 0 1 430px; width: auto; }
+}
+.empty { color: var(--muted); font-size: 13px; }
+
+/* chips, messages */
+.chip { font-size: 11.5px; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.chip.bill { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.chip.off { background: var(--off-soft); color: var(--off); }
+.msg:empty { display: none; }
+.msg { font-size: 13px; border-radius: 12px; padding: 10px 12px; background: var(--accent-soft); }
+.msg.err { background: var(--danger-soft); }
+.msg strong { font-weight: 600; }
+.msg button { margin-top: 6px; }
+.note-box { font-size: 13px; background: var(--off-soft); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+/* timesheet */
+.ts { padding: 0; gap: 0; }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-top: 4px solid var(--teal); border-radius: 16px 16px 0 0; padding: 16px 20px 12px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.weekbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.weeklabel { flex: 1 1 150px; min-width: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.weeklabel h2 { font-size: 22px; }
+.ts > .tiles { padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.ts > .msg { margin: 12px 20px 0; }
+.status { font-size: 13px; color: var(--accent); min-height: 1em; }
+.status:empty { display: none; }
+.tsmain { min-width: 0; display: flex; flex-direction: column; }
+form.f { display: flex; flex-direction: column; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field label { font-size: 12px; color: var(--muted); }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+@media (max-width: 420px) { .grid3 { grid-template-columns: 1fr 1fr; } .grid3 .field:last-child { grid-column: 1 / -1; } }
+input, select, textarea { width: 100%; box-sizing: border-box; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+textarea { resize: vertical; min-height: 60px; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); background: var(--surface); outline: none; }
+.count { font-size: 11px; color: var(--muted); text-align: right; }
+.actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tsmain > .msg { margin: 12px 20px 0; }
+
+/* matrix */
+.mxwrap { margin-top: 0; }
+.mxwrap .empty { padding: 18px 20px; }
+table.mx { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 520px; font-size: 13px; }
+.mx th, .mx td { padding: 9px 7px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.mx thead th { color: var(--muted); font-weight: 500; vertical-align: bottom; padding-top: 12px; }
+.mx thead th span { display: block; font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; }
+.mx thead th b { font-weight: 500; color: var(--ink); font-size: 14px; }
+.mx .rec { position: sticky; left: 0; z-index: 1; background: var(--surface); text-align: left; white-space: normal; min-width: 128px; max-width: 190px; padding-left: 20px; }
+.mx thead .rec { font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; }
+.adot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 7px; vertical-align: 0; flex-shrink: 0; }
+.mx .rec small { display: block; padding-left: 16px; color: var(--muted); font-size: 12px; font-weight: 400; }
+.mx tbody .rec { font-weight: 700; overflow-wrap: anywhere; text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink); }
+.mx tbody .rec small { text-transform: none; letter-spacing: 0; }
+.mx .today { background: var(--now); }
+.mx thead th.today b, .mx thead th.today span { color: var(--accent); font-weight: 600; }
+.mx .colsel { background: var(--accent-soft); }
+.mx .wkend { color: var(--muted); }
+.mx .tot { font-weight: 600; padding-right: 20px; }
+.mx tfoot td, .mx tfoot th { font-weight: 700; border-bottom: 0; background: var(--plan-soft); color: var(--plan-ink); }
+.mx tfoot .rec { background: var(--plan-soft); }
+.mx tr.offrow .rec, .mx tr.offrow td { background: var(--off-soft); }
+.mx tr.offrow .rec small { padding-left: 0; }
+.mx .zero { color: var(--muted); opacity: .45; }
+.mx td .mxro { display: block; box-sizing: border-box; min-width: 2.6em; text-align: right; border-radius: 999px; padding: 3px 8px; margin: -3px -2px; cursor: default; }
+.mx td .mxro.h1 { background: var(--h1); color: var(--h-ink); font-weight: 700; }
+.mx td .mxro.h2 { background: var(--h2); color: var(--h-ink); font-weight: 700; }
+.mx td .mxro.h3 { background: var(--h3); color: var(--h-ink); font-weight: 700; }
+.mx td .mxro.h4 { background: var(--h4); color: var(--h-ink); font-weight: 700; }
+.mx td button { all: unset; box-sizing: border-box; display: block; width: 100%; min-width: 2.6em; text-align: right; cursor: pointer; border-radius: 999px; padding: 3px 8px; margin: -3px -2px; }
+.mx td button.h1 { background: var(--h1); color: var(--h-ink); font-weight: 700; }
+.mx td button.h2 { background: var(--h2); color: var(--h-ink); font-weight: 700; }
+.mx td button.h3 { background: var(--h3); color: var(--h-ink); font-weight: 700; }
+.mx td button.h4 { background: var(--h4); color: var(--h-ink); font-weight: 700; }
+.mx td button:hover { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.mx td button:focus-visible { outline: 2px solid var(--accent); }
+.mx td button[aria-pressed="true"] { background: var(--navy); color: var(--on-navy); }
+.mx td button[aria-pressed="true"] .zero { color: var(--accent-ink); opacity: .8; }
+/* entries ledger: the first row adds an entry, then one row per entry */
+.ledger { border-top: 4px solid var(--teal); display: flex; flex-direction: column; }
+.ledhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 16px 20px 8px; }
+.ledhead h3 { font-size: 19px; }
+.ledsum { margin-left: auto; }
+.ledsum b { color: var(--ink); font-weight: 600; }
+.filter { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--accent); color: var(--accent); border-radius: 999px; padding: 2px 4px 2px 10px; font-weight: 600; font-size: 12.5px; }
+.filter button { border: 0; background: none; color: inherit; padding: 0 6px; font-size: 15px; line-height: 1; border-radius: 999px; }
+.filter button:hover { background: var(--accent-soft); }
+.ledwrap { overflow-x: auto; }
+.ledgrid { min-width: 860px; }
+.lg { display: grid; grid-template-columns: 124px minmax(0, 1.5fr) 76px 128px 128px minmax(0, 2fr) 104px; gap: 0 10px; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--line); }
+.lg > * { min-width: 0; }
+.lg > .cellv { padding: 9px 0; }
+.lh { background: var(--plan-soft); }
+.lh > div { color: var(--plan-ink) !important; padding: 8px 0; color: var(--muted); font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 500; }
+.lg .r { text-align: right; font-variant-numeric: tabular-nums; }
+.lg .hrsv { font-weight: 600; }
+.lg .clip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lrow.hit { background: var(--now); }
+.lrow.offrow { background: var(--off-soft); }
+.lrow .act { text-align: right; }
+.lrow.editing { background: var(--surface-2); padding-top: 8px; padding-bottom: 8px; row-gap: 8px; }
+.lrow.editing .wide, .entryrow .wide { grid-column: 1 / -1; }
+.lg input, .lg select { padding: 6px 8px; border-radius: 8px; }
+.entryrow { background: var(--accent-soft); border-bottom: 2px solid var(--teal); padding-top: 10px; padding-bottom: 12px; transition: box-shadow .4s; }
+.entryrow.primed { box-shadow: inset 0 0 0 2px var(--accent); }
+.entryrow .primary { padding: 7px 14px; width: 100%; }
+.ledempty { padding: 14px 20px; color: var(--muted); font-size: 13px; border-bottom: 1px solid var(--line); }
+.ledger > .msg { margin: 0 20px 10px; }
+.ledgrid { padding-bottom: 4px; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.mxhint { color: var(--muted); font-size: 12px; padding: 10px 20px 16px; }
+.row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; }
+.main { flex: 1; min-width: 0; }
+.notes { font-size: 13.5px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.hrs { font-size: 15px; font-weight: 600; }
+.editbtn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; font-size: 12.5px; }
+.editbtn:hover { border-color: var(--accent); color: var(--accent); }
+.foot { color: var(--muted); font-size: 12px; text-align: center; }
+/* header timer */
+.timerbox { position: relative; width: min(100%, 440px); min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 8px 8px 8px 12px; display: flex; flex-direction: column; gap: 8px; }
+#tmActive:empty { display: none; }
+#tmActive:not(:empty) { border-bottom: 1px solid var(--line); padding-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+.tmrow { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.tmname { flex: 1; min-width: 0; }
+.tmname b, .tmname small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tmname b { font-weight: 600; font-size: 13.5px; }
+.tmname small { color: var(--muted); font-size: 12px; }
+.clock { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--plan-ink); line-height: 1; font-variant-numeric: tabular-nums; }
+.clock.paused { color: var(--muted); }
+.tmbtns { display: flex; gap: 4px; flex-shrink: 0; }
+.iconbtn { width: 34px; height: 34px; flex-shrink: 0; display: inline-grid; place-items: center; padding: 0; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.iconbtn svg { width: 16px; height: 16px; display: block; }
+.iconbtn:hover { border-color: var(--accent); color: var(--accent); }
+.iconbtn.go { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.iconbtn.go:hover { filter: brightness(1.08); color: var(--accent-ink); }
+.iconbtn.bad:hover { border-color: var(--danger); color: var(--danger); }
+.iconbtn.sm { width: 28px; height: 28px; }
+.iconbtn.sm svg { width: 14px; height: 14px; }
+.iconbtn[disabled] { opacity: .55; cursor: default; }
+#refreshAll[disabled] { opacity: 1; }
+#refreshAll[disabled] svg { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.tmothers { display: flex; flex-wrap: wrap; gap: 6px; }
+.chipbtn { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 3px 10px 3px 7px; font-size: 12px; color: var(--muted); }
+.chipbtn:hover { border-color: var(--accent); color: var(--accent); }
+span.chipbtn { cursor: default; }
+span.chipbtn:hover { border-color: var(--line); color: var(--muted); }
+.chipbtn svg { width: 11px; height: 11px; flex-shrink: 0; }
+.chipbtn span:first-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tmpick { display: flex; gap: 6px; align-items: center; }
+.tmpick select { flex: 1; padding: 6px 10px; }
+.timerbox > .msg { font-size: 12.5px; padding: 8px 10px; }
+.tmpop { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: min(380px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 12px 32px rgb(0 0 0 / .16); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.tmpop h3 { font-size: 16px; }
+@media (max-width: 640px) { .tmpop { position: static; width: auto; box-shadow: none; } .timerbox { width: 100%; } }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pop); display: inline-block; flex-shrink: 0; animation: pulse 1.6s ease-in-out infinite; }
+.dot.paused { background: var(--muted); animation: none; }
+@keyframes pulse { 50% { opacity: .3; } }
+.chip.lock { background: var(--surface-2); color: var(--muted); }
+.opt { color: var(--muted); font-weight: 400; }
+[hidden] { display: none !important; }
+/* record links: Salesforce records open in a new tab; subtle underline, accent on hover */
+a.reclink { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a.reclink:hover { color: var(--accent); text-decoration-color: currentColor; }
+.hello a.reclink { text-decoration-color: rgb(186 220 227 / .45); }
+.hello a.reclink:hover { color: var(--on-navy-2); }
+/* quick log: tap tracking, one row per assignment; a stand-alone card */
+.qlrows { display: flex; flex-direction: column; }
+/* one row: name, tap buttons, pending, then the day's logged hours in a fixed right column */
+.qlrow { display: grid; grid-template-columns: minmax(0, 1fr) auto 150px 76px; grid-template-areas: "name btns pend tot"; align-items: center; gap: 8px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.qlname { grid-area: name; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+.qlbtns { grid-area: btns; }
+.qltot { grid-area: tot; text-align: right; line-height: 1.2; }
+.qltot b { font-size: 15px; font-weight: 700; color: var(--ink); }
+.qltot small { display: block; color: var(--muted); font-size: 12px; }
+.qltot .zero { color: var(--muted); }
+@media (max-width: 640px) {
+  .qlrow { grid-template-columns: minmax(0, 1fr) 76px; grid-template-areas: "name tot" "btns btns" "pend pend"; }
+  .qlpend:empty { display: none; }
+}
+.qlbottom { display: flex; align-items: baseline; gap: 10px; padding-top: 10px; }
+.qlfoot { margin-left: auto; text-align: right; font-size: 13px; color: var(--muted); }
+.qlfoot b { font-size: 15px; color: var(--plan-ink); margin-left: 4px; }
+.qldate { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.qlwd { font-weight: 700; font-size: 13px; color: var(--plan-ink); }
+.qldate input.qldayin { width: auto; padding: 4px 8px; border-radius: 999px; font-size: 13px; }
+.qldate .iconbtn { font-size: 17px; line-height: 1; }
+.qlname small { display: block; padding-left: 16px; color: var(--muted); font-size: 12px; font-weight: 400; }
+.qlbtns { display: flex; gap: 6px; flex-wrap: wrap; }
+.qlbtns button { border: 1px solid transparent; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.qlbtns button:hover { border-color: var(--accent); }
+.qlbtns button:active { background: var(--accent); color: var(--accent-ink); }
+.qlpend { grid-area: pend; display: flex; align-items: center; gap: 8px; min-height: 30px; font-size: 13px; }
+.qlpend b { color: var(--pop-ink); font-weight: 700; }
+.qltick { width: 48px; height: 4px; border-radius: 999px; background: rgb(15 122 144 / .15); overflow: hidden; }
+.qltick i { display: block; height: 100%; width: 100%; background: var(--pop); animation: qldrain 1.5s linear forwards; }
+@keyframes qldrain { to { width: 0; } }
+.qlx { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; width: 26px; height: 26px; padding: 0; line-height: 1; font-size: 15px; color: var(--muted); }
+.qlx:hover { border-color: var(--danger); color: var(--danger); }
+.qlok { color: var(--accent); font-weight: 600; }
+.qlpend .textbtn { font-weight: 700; }
+/* time off: request form (a popover under Coming up) and cancel */
+.upbox { position: relative; }
+.uplist .x .textbtn { font-size: 12px; }
+.uplist .note-box { margin-top: 2px; }
+.uplist .note-box .danger, .uplist .note-box .ghost { padding: 5px 12px; font-size: 12.5px; }
+.upact { display: flex; }
+.upbox > .msg { font-size: 12.5px; padding: 8px 10px; }
+.offpop { left: 0; right: auto; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.offsum { font-size: 13px; font-weight: 600; color: var(--plan-ink); }
+.offsum:empty { display: none; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } .dot, #refreshAll[disabled] svg, .qltick i { animation: none; } }
+
+/* help text: every note is a .rh-help element; deleting them and this block leaves a clean page */
+.rh-help { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.45; max-width: 75ch; border-left: 3px solid var(--accent-soft); padding-left: 10px; }
+.rh-help + .hello { margin-top: 0; }
+.wrap > .rh-help { margin-top: 16px; }
+.rh-help.rh-intro { font-size: 13.5px; color: var(--ink); background: var(--surface); max-width: 90ch; padding: 10px 14px; border-left-width: 4px; border-radius: 0 8px 8px 0; }
+.hello .rh-help { color: var(--on-navy-2); border-left-color: rgb(186 220 227 / .35); margin-top: 10px; max-width: 46ch; }
+.upbox .rh-help, .timerbox .rh-help { font-size: 12px; color: var(--muted); border-left-color: var(--accent-soft); margin-top: 2px; max-width: none; }
+.tiles > .rh-help { grid-column: 1 / -1; }
+.tsmain > .rh-help { margin: 12px 20px 4px; }
+.ledger > .rh-help { margin: 0 20px 10px; }
+</style>
+
+<div class="wrap">
+  <div class="rh-help rh-intro"><strong>About this page.</strong> This is your personal Resource Hero time dashboard: see what's coming up, run timers, log time with a tap, and check and fix your week. Everything you do here saves straight to Resource Hero in Salesforce. The page is yours to customize: ask Claude to add, remove, move or restyle any part of it, for example "remove the timer" or "add my utilization by week". Notes like this one explain each part; when you no longer need them, ask Claude to <strong>"remove the help text from my time dashboard"</strong>.</div>
+  <header class="hello">
+    <div>
+      <h1><span id="greet">Hello</span><span id="who"></span></h1>
+      <div class="date" id="todayLine"></div>
+      <div class="fresh"><span class="uptodate" id="freshness">Loading…</span>
+        <button class="iconbtn sm" type="button" id="refreshAll" aria-label="Refresh" title="Refresh"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+      <p class="rh-help">This page shows your Resource Hero time straight from Salesforce, using your own login. Click ↻ to load the latest, and click your name to open your Resource record.</p>
+    </div>
+    <div class="hello-right">
+      <section class="upbox" aria-labelledby="offTitle">
+        <div class="lbl" id="offTitle">Coming up</div>
+        <ul class="uplist" id="offList" aria-labelledby="offTitle"><li class="empty">Loading…</li></ul>
+        <div class="upact"><button type="button" class="textbtn" id="offReqBtn" aria-expanded="false" aria-controls="offPop">+ Request time off</button></div>
+        <div class="msg" id="offMsg" role="status"></div>
+        <div class="tmpop offpop" id="offPop" hidden></div>
+        <p class="rh-help">Your next holidays and time off, soonest first. Hover a line for details. Use Request time off to ask for days off, and Cancel on a request that hasn't been approved yet.</p>
+      </section>
+      <section class="timerbox" id="timerBox" aria-label="Timer">
+        <div id="tmActive"></div>
+        <form class="tmpick" id="tmStart" novalidate>
+          <select id="tmAssign" aria-label="Assignment to time"><option value="">Loading your assignments…</option></select>
+        </form>
+        <div class="msg" id="tmMsg" role="status"></div>
+        <div class="tmpop" id="tmPop" hidden></div>
+        <p class="rh-help">Pick an assignment to start a timer. Pause it, stop it to log the time, or use × to throw the time away.</p>
+      </section>
+    </div>
+  </header>
+
+  <!-- Quick log: tap tracking. A stand-alone card; its script block is "quick log" below. -->
+  <section class="card qlog" id="quickLog" aria-labelledby="qlTitle" hidden>
+    <div class="sechead"><h2 id="qlTitle">Quick log</h2>
+      <div class="qldate" id="qlDate" role="group" aria-label="Day to log to">
+        <span class="sub">Logging to</span>
+        <button type="button" class="iconbtn sm" data-qlstep="-1" aria-label="Previous day" title="Previous day">‹</button>
+        <span class="qlwd" id="qlWd"></span>
+        <input type="date" class="qldayin" id="qlDayIn" aria-label="Day to log to">
+        <button type="button" class="iconbtn sm" data-qlstep="1" aria-label="Next day" title="Next day">›</button>
+        <button type="button" class="textbtn" id="qlToday" hidden>Today</button>
+      </div></div>
+    <p class="rh-help">Tap a button to add that much time to an assignment; tap again to add more. About a second after your last tap, it saves as one entry for the day shown at the top of this card. Change the day with the arrows or the date, or by picking a day in the grid. Use × to cancel before it saves, or Undo just after. On the right: hours logged that day, with hours planned underneath.</p>
+    <div class="msg" id="qlMsg" role="status"></div>
+    <div class="qlrows" id="qlRows"><div class="empty">Loading…</div></div>
+    <div class="qlbottom"><span id="qlMore"></span><span class="qlfoot" id="qlFoot" aria-live="polite"></span></div>
+  </section>
+
+  <!-- The week: heading and tiles, the grid, then the entries ledger whose first row adds an entry. -->
+  <div class="grid">
+    <section class="card ts" aria-labelledby="tsTitle">
+      <header class="top">
+        <div class="weekbar">
+          <div class="weeklabel"><h2 id="tsTitle"><span id="weekRange">This week</span></h2><span class="sub" id="weekNo"></span></div>
+          <div class="seg" role="group" aria-label="Choose week">
+            <button type="button" id="prevWeek" aria-label="Previous week">‹ Prev</button>
+            <button type="button" id="thisWeek">This week</button>
+            <button type="button" id="nextWeek" aria-label="Next week">Next ›</button>
+          </div>
+        </div>
+        <div class="status" id="status" role="status"></div>
+      </header>
+      <div class="tiles" id="tiles">
+        <div class="tile"><span class="lbl">Planned</span><span class="tv" data-tile="planned">–</span></div>
+        <div class="tile logged"><span class="lbl">Logged</span><span class="tv" data-tile="logged">–</span><span class="tnote num" data-tile-note="billable"></span><span class="bar" aria-hidden="true"><i id="logBar"></i></span></div>
+        <div class="tile key"><span class="lbl">Left to log</span><span class="tv" data-tile="left">–</span></div>
+        <p class="rh-help">Planned is the project time scheduled for you this week, Logged is the time you've entered, and Left to log is the difference. Holidays and time off aren't included.</p>
+      </div>
+      <div class="msg" id="sumMsg" role="alert"></div>
+
+        <div class="tsmain">
+          <div class="msg" id="pageMsg" role="alert"></div>
+          <p class="rh-help">Your hours by assignment and day; darker means more time. Click a cell to see that day's entries and add time to it, or click a project name to open it in Salesforce. Holidays, time off, and locked or archived assignments show their hours but can't take new time.</p>
+          <div class="tablewrap mxwrap" id="matrix"><div class="empty">Loading…</div></div>
+          <div class="mxhint">Tap a cell to show that day's entries and start a new one for it.</div>
+        </div>
+
+        <div class="ledger" id="ledger" aria-labelledby="ledTitle">
+          <div class="ledhead"><h3 id="ledTitle">Entries</h3><span id="ledFilter"></span><span class="sub ledsum" id="ledSum"></span></div>
+          <p class="rh-help">Every entry for the week, or for the day you picked in the grid. Add time in the first row; Edit changes or deletes an entry.</p>
+          <div class="msg" id="addMsg" role="status"></div>
+          <div class="ledwrap"><div class="ledgrid">
+            <div class="lg lh" aria-hidden="true"><div>Date</div><div>Assignment</div><div class="r">Hours</div><div>Billable</div><div>Category</div><div>Notes</div><div></div></div>
+            <form class="lg entryrow" id="addForm" novalidate aria-label="Log time">
+              <div><label class="vh" for="addDate">Date</label><input type="date" id="addDate" required></div>
+              <div><label class="vh" for="addAssign">Assignment</label><select id="addAssign" required><option value="">Loading your assignments…</option></select></div>
+              <div><label class="vh" for="addHours">Hours</label><input type="number" id="addHours" class="num r" min="0.01" max="24" step="0.01" inputmode="decimal" placeholder="Hours" required></div>
+              <div><label class="vh" for="addBill">Billable</label><select id="addBill"><option value="">Org default</option><option value="true">Billable</option><option value="false">Non-billable</option></select></div>
+              <div><label class="vh" for="addCat">Category</label><input id="addCat" list="catList" maxlength="255" autocomplete="off" placeholder="Category"></div>
+              <div><label class="vh" for="addNotes">Notes</label><input id="addNotes" maxlength="500" autocomplete="off" placeholder="Notes"></div>
+              <div><button type="submit" class="primary" id="addSave">Add</button></div>
+            </form>
+            <div id="ledRows"><div class="ledempty">Loading…</div></div>
+          </div></div>
+          <datalist id="catList"></datalist>
+        </div>
+    </section>
+  </div>
+
+  <div class="foot">Everything here is read live from Resource Hero as you.</div>
+</div>
+
+<script>
+// Fill in before publishing (see SKILL.md): the connector's display name in Claude, and each
+// tool's name on that server. Names vary with how the admin built the server; match each by the
+// action name in it, ignoring case. Declare the same server and names in the page's capabilities.
+const SERVER = "{{RH_CONNECTOR}}";
+const TOOLS = {
+  getMyAssignments: "getMyAssignments",
+  getMyTrackedTime: "getMyTrackedTime",
+  getMyTimeSummary: "getMyTimeSummary",
+  getMyTimeOff: "getMyTimeOff",
+  insertActuals: "insertActuals",
+  updateActuals: "updateActuals",
+  deleteActuals: "deleteActuals",
+  getMyTimers: "getMyTimers",
+  startTimer: "startTimer",
+  pauseTimer: "pauseTimer",
+  stopTimer: "stopTimer",
+  cancelTimer: "cancelTimer",
+  getMyForecast: "getMyForecast",
+  getMyCapacity: "getMyCapacity",
+  requestTimeOff: "requestTimeOff",
+  cancelTimeOff: "cancelTimeOff",
+};
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// ---------- record links ----------
+// getMyAssignments sends the org's URL; a record opens at orgUrl + "/" + Id, in a new tab. Plain text when either is missing.
+const org = { url: "", resourceId: "" };
+const sfId = id => /^[A-Za-z0-9]{15}(?:[A-Za-z0-9]{3})?$/.test(String(id ?? "")) ? String(id) : "";
+function recLink(text, id) {
+  const i = sfId(id);
+  if (!org.url || !i) return esc(text);
+  return `<a class="reclink" href="${esc(org.url + "/" + i)}" target="_blank" rel="noopener">${esc(text)}</a>`;
+}
+// The assigned-to record of an assignment: from the reply row itself, else from the assignment list.
+const toId = (assignmentId, row) => (row && row.assignedToId) || (state.allAssignments.find(a => a.assignmentId === assignmentId) || {}).assignedToId;
+
+// ---------- dates ----------
+const iso = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const parseIso = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parseIso(s); d.setDate(d.getDate() + n); return iso(d); };
+const mondayOf = s => { const d = parseIso(s); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
+const todayIso = () => iso(new Date());
+const isValidIso = s => /^\d{4}-\d{2}-\d{2}$/.test(s) && iso(parseIso(s)) === s;
+const fmtDay = s => parseIso(s).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+const fmtShort = s => parseIso(s).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+function isoWeek(s) {
+  const d = parseIso(s); d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  const w1 = new Date(d.getFullYear(), 0, 4);
+  return 1 + Math.round(((d - w1) / 864e5 - 3 + ((w1.getDay() + 6) % 7)) / 7);
+}
+const fmtH = h => (h == null || isNaN(h)) ? "–" : String(parseFloat(Number(h).toFixed(2)));
+
+// ---------- connector calls ----------
+class RhError extends Error {
+  constructor(message, code, kind, retryable) { super(message || ""); this.code = code; this.kind = kind; this.retryable = !!retryable; }
+}
+const parseMaybe = x => { if (typeof x === "string") { try { return JSON.parse(x); } catch { return x; } } return x; };
+
+// One unwrap for every Salesforce-wrapped reply: list -> first item -> outputValues (text blocks parsed on the way).
+function unwrap(res) {
+  let p = parseMaybe(res && typeof res === "object" && "payload" in res && res.payload !== undefined ? res.payload : res);
+  for (let i = 0; i < 5; i++) {
+    if (p && !Array.isArray(p) && p.content !== undefined && !("outputValues" in p)) {
+      const c = parseMaybe(p.content);
+      // Resource Hero: {content:[{actionName, isSuccess, outputValues}]} — the list itself sits in content.
+      if (Array.isArray(c) && c.some(b => b && typeof b === "object" && ("isSuccess" in b || "outputValues" in b))) { p = c; continue; }
+      const t = Array.isArray(c) ? c.find(b => b && b.type === "text") : null;
+      p = parseMaybe(t ? t.text : null); continue;
+    }
+    if (Array.isArray(p)) {
+      const f = p[0];
+      if (f && f.type === "text" && typeof f.text === "string") { p = parseMaybe(f.text); continue; }
+      p = f; continue;
+    }
+    break;
+  }
+  if (!p || typeof p !== "object") throw new RhError("Resource Hero sent a reply this page couldn't read.", "BAD_REPLY", "tool");
+  if (p.isSuccess === false) {
+    const msg = (p.errors || []).map(e => (e && (e.message || e.statusCode)) || String(e)).filter(Boolean).join("; ");
+    throw new RhError(msg || "Salesforce couldn't run the action.", "ACTION_FAILED", "tool");
+  }
+  const out = parseMaybe(p.outputValues !== undefined ? p.outputValues : p) || {};
+  if (out.success === false && !Array.isArray(out.results)) throw new RhError(out.errorMessage, out.errorCode || "ERROR", "tool");
+  return out;
+}
+
+let mcpP = null;
+const getMcp = () => mcpP || (mcpP = (window.claude && window.claude.use) ? window.claude.use("mcp") : Promise.resolve(null));
+
+async function rh(tool, input) {
+  const mcp = await getMcp();
+  if (!mcp) throw new RhError("This view can't reach your connectors. Open the page in claude.ai while signed in.", "no_mcp", "mcp");
+  let res;
+  try {
+    res = await mcp.callTool(SERVER, TOOLS[tool] || tool, { inputs: [input] }, { cache: false });
+  } catch (e) {
+    if (e && e.code === "tool_error" && e.result) {
+      try { return unwrap(e.result); }
+      catch (inner) { if (inner instanceof RhError && inner.code !== "BAD_REPLY") throw inner; }
+    }
+    throw new RhError(e && e.message, (e && e.code) || "upstream_error", "mcp", e && e.retryable);
+  }
+  return unwrap(res);
+}
+
+// ---------- error copy ----------
+const ADMIN = { NO_RESOURCE: "No Resource Hero resource is linked to your Salesforce user.", MULTIPLE_RESOURCES: "More than one Resource Hero resource is linked to your Salesforce user.", NOT_LICENSED: "Your Salesforce user doesn't have a Resource Hero license.", NO_ACCESS: "Your Salesforce user doesn't have access to this." };
+function errorHtml(e, { write = false } = {}) {
+  const c = e && e.code, m = e && e.message;
+  if (e && e.kind === "tool") {
+    if (ADMIN[c]) return `<strong>${esc(m || ADMIN[c])}</strong> Your Salesforce admin needs to fix this. <span class="num">(${esc(c)})</span>`;
+    if (c === "READ_ONLY") return `<strong>That assignment can't take time right now; it's locked.</strong> ${esc(m)}`;
+    if (c === "ARCHIVED") return `<strong>That assignment is archived and can't take time.</strong> ${esc(m)}`;
+    if (c === "CORE_RULE") return `<strong>A Resource Hero rule refused this:</strong> ${esc(m)}`;
+    if (c === "ORG_RULE") return `<strong>Your org's rule refused this:</strong> ${esc(m)}`;
+    if (c === "TIME_OFF_STATE") return `<strong>Only Open or Submitted time off requests can be cancelled.</strong> ${esc(m)}`;
+    if (c === "TIMER_STATE") return `<strong>That timer can't do that right now.</strong> ${esc(m)}`;
+    if (c === "INVALID_INPUT") return `<strong>Fix the form:</strong> ${esc(m)}`;
+    if (c === "NOT_FOUND") return `<strong>That entry no longer exists.</strong> ${esc(m)}`;
+    if (c === "NOT_YOUR_RESOURCE") return `<strong>That entry isn't yours.</strong> ${esc(m)}`;
+    return `<strong>${esc(m || "Resource Hero refused the request.")}</strong>${c ? ` <span class="num">(${esc(c)})</span>` : ""}`;
+  }
+  switch (c) {
+    case "no_mcp": case "not_granted": case "capability_disabled": case "capability_removed":
+      return "<strong>This view can't reach your connectors.</strong> Open the page in claude.ai while signed in.";
+    case "server_not_connected": case "server_not_found":
+      return `<strong>${esc(SERVER)} isn't connected for you.</strong> Add it in claude.ai Settings → Connectors, then reload this page.`;
+    case "selection_required":
+      return `<strong>You have more than one ${esc(SERVER)} connector.</strong> Choose one when claude.ai asks, then try again.`;
+    case "needs_reauth":
+      return `<strong>Your ${esc(SERVER)} sign-in expired.</strong> Reconnect it in claude.ai Settings → Connectors.`;
+    case "not_in_manifest": case "approval_required": case "consent_required":
+      return `<strong>This page needs your permission to use ${esc(SERVER)}.</strong> Try again and choose Allow.`;
+    case "blocked_by_policy":
+      return `<strong>Your organization's policy blocks this Resource Hero tool for you.</strong>`;
+    case "server_unavailable": case "upstream_error": case "cancelled":
+      return write
+        ? `<strong>Resource Hero didn't confirm the save.</strong> It may or may not have gone through, so the week has been reloaded; check it before trying again.`
+        : `<strong>Resource Hero didn't answer.</strong> Try again in a moment.`;
+    default:
+      return `<strong>${esc(m || "The connector call failed.")}</strong>`;
+  }
+}
+const AMBIGUOUS = new Set(["server_unavailable", "upstream_error", "cancelled"]);
+function showMsg(el, html, isErr) { el.className = "msg" + (isErr ? " err" : ""); el.innerHTML = html; }
+function clearMsg(el) { el.className = "msg"; el.innerHTML = ""; }
+let statusTimer;
+function flash(text) { const s = $("#status"); s.textContent = text; clearTimeout(statusTimer); statusTimer = setTimeout(() => (s.textContent = ""), 4000); }
+
+// Runs one write; returns {ok, code}. Shows the failure in msgEl. Reloads on ambiguous outcomes.
+async function write(tool, input, msgEl) {
+  try {
+    const out = await rh(tool, input);
+    const r = Array.isArray(out.results) ? out.results[0] : null;
+    if (r && r.success === false) {
+      const e = new RhError(r.errorMessage, r.errorCode, "tool");
+      showMsg(msgEl, errorHtml(e), true); return { ok: false, code: r.errorCode };
+    }
+    if (out.success === false) {
+      showMsg(msgEl, errorHtml(new RhError(out.errorMessage, out.errorCode, "tool")), true); return { ok: false, code: out.errorCode };
+    }
+    return { ok: true, out };
+  } catch (e) {
+    showMsg(msgEl, errorHtml(e, { write: true }), true);
+    if (e.kind === "mcp" && AMBIGUOUS.has(e.code)) { loadWeek({ keepMsg: true }); refreshDash(); }
+    if (e.kind === "tool" && e.code === "NOT_FOUND") loadWeek({ keepMsg: true });
+    return { ok: false, code: e.code };
+  }
+}
+
+// ---------- state ----------
+const state = { weekStart: mondayOf(todayIso()), entries: [], totals: null, assignments: [], allAssignments: [], lockedIds: new Set(), assignLoaded: false, cats: new Set(), dayFilter: null, mxSel: null, editingId: null, loadSeq: 0, loaded: false };
+
+// ---------- week ----------
+function renderWeekHeader() {
+  const ws = state.weekStart, we = addDays(ws, 6);
+  $("#weekRange").textContent = `${fmtShort(ws)} – ${fmtShort(we)} ${parseIso(we).getFullYear()}`;
+  $("#weekNo").textContent = `Week ${isoWeek(ws)}` + (ws === mondayOf(todayIso()) ? " · this week" : "");
+  $("#thisWeek").disabled = ws === mondayOf(todayIso());
+}
+
+async function loadWeek({ keepMsg = false } = {}) {
+  const seq = ++state.loadSeq;
+  renderWeekHeader();
+  if (!keepMsg) clearMsg($("#pageMsg"));
+  if (state.loaded) $("#matrix").style.opacity = ".55";
+  try {
+    const out = await rh("getMyTrackedTime", { startDate: state.weekStart, endDate: addDays(state.weekStart, 6) });
+    if (seq !== state.loadSeq) return;
+    state.entries = Array.isArray(out.entries) ? out.entries : [];
+    state.totals = { total: out.totalHours, billable: out.billableHours };
+    state.loaded = true;
+    state.entries.forEach(e => e.category && state.cats.add(e.category));
+    $("#catList").innerHTML = [...state.cats].sort().map(c => `<option value="${esc(c)}"></option>`).join("");
+    renderDays();
+  } catch (e) {
+    if (seq !== state.loadSeq) return;
+    state.entries = []; state.totals = null; state.loaded = false;
+    renderTiles();
+    renderMatrix();
+    showMsg($("#pageMsg"), errorHtml(e) + `<div><button class="ghost" type="button" id="retryWeek">Try again</button></div>`, true);
+  } finally {
+    if (seq === state.loadSeq) $("#matrix").style.opacity = "";
+  }
+}
+
+function entryKind(e) { return e.kind === "Holiday" || e.kind === "TimeOff" ? e.kind : "Project"; }
+
+function renderDays() {
+  renderTiles();
+  renderMatrix();
+}
+
+// One ledger row in edit mode: the same columns as inputs, then Save / Cancel / Delete and the delete confirmations.
+function editRowHtml(e) {
+  const p = "e-" + e.timeEntryId.replace(/[^A-Za-z0-9]/g, "");
+  const b = e.billable === true ? "true" : e.billable === false ? "false" : "";
+  return `<form class="lg lrow editing" novalidate data-id="${esc(e.timeEntryId)}" aria-label="Edit entry">
+    <div><label class="vh" for="${p}-date">Date</label><input type="date" id="${p}-date" name="date" value="${esc(e.entryDate)}" required></div>
+    <div class="clip" title="${esc(e.assignedTo || "")}">${recLink(e.assignedTo || e.assignmentName || "Assignment", toId(e.assignmentId, e))}${e.role ? ` <span class="sub">· ${esc(e.role)}</span>` : ""}</div>
+    <div><label class="vh" for="${p}-hours">Hours</label><input type="number" class="num r" id="${p}-hours" name="hours" min="0.01" max="24" step="0.01" inputmode="decimal" value="${esc(e.hours)}" required></div>
+    <div><label class="vh" for="${p}-bill">Billable</label><select id="${p}-bill" name="bill">
+      ${b === "" ? `<option value="" selected>Not set</option>` : ""}
+      <option value="true"${b === "true" ? " selected" : ""}>Billable</option>
+      <option value="false"${b === "false" ? " selected" : ""}>Non-billable</option></select></div>
+    <div><label class="vh" for="${p}-cat">Category</label><input id="${p}-cat" name="cat" list="catList" maxlength="255" autocomplete="off" placeholder="Category" value="${esc(e.category || "")}"></div>
+    <div><label class="vh" for="${p}-notes">Notes</label><input id="${p}-notes" name="notes" maxlength="500" autocomplete="off" placeholder="Notes" value="${esc(e.notes || "")}"></div>
+    <div><button type="submit" class="primary" data-act="save" style="padding: 7px 14px; width: 100%">Save</button></div>
+    <div class="wide actions"><button type="button" class="ghost" data-act="cancel">Cancel</button><button type="button" class="linkbtn" data-act="del">Delete…</button></div>
+    <div class="wide note-box" data-box="confirm" hidden>
+      <div>Delete <b class="num">${fmtH(e.hours)} h</b> on ${esc(fmtDay(e.entryDate))} for ${esc(e.assignedTo || "this assignment")}? This can't be undone.</div>
+      <div class="actions"><button type="button" class="danger" data-act="delyes">Delete entry</button><button type="button" class="ghost" data-act="delno">Keep it</button></div>
+    </div>
+    <div class="wide note-box" data-box="mefs" hidden>
+      <div><b>Resource Hero won't delete this entry outright.</b> It also holds planning values, such as forecast hours, that would be lost. You can clear just the hours and notes you logged; the planning values stay.</div>
+      <div class="actions"><button type="button" class="danger" data-act="clearonly">Clear the logged hours only</button><button type="button" class="ghost" data-act="delno">Keep it</button></div>
+    </div>
+    <div class="wide msg" data-msg role="status"></div>
+  </form>`;
+}
+
+// ---------- validation ----------
+function checkHours(v) {
+  const h = Number(v);
+  if (v === "" || isNaN(h)) return "Enter the hours.";
+  if (h <= 0) return "Hours must be greater than 0.";
+  if (h > 24) return "Hours can't be more than 24 in one entry.";
+  if (Math.abs(h * 100 - Math.round(h * 100)) > 1e-6) return "Use at most two decimals, such as 1.5 or 1.25.";
+  return null;
+}
+function setBusy(form, busy) { form.querySelectorAll("button").forEach(b => (b.disabled = busy)); }
+
+// ---------- assignments / add ----------
+async function loadAssignments() {
+  const sel = $("#addAssign"), keep = sel.value;
+  try {
+    const out = await rh("getMyAssignments", {});
+    org.url = /^https:\/\/[^\s"'<>\/]+$/.test(String(out.orgUrl || "").replace(/\/+$/, "")) ? String(out.orgUrl).replace(/\/+$/, "") : "";
+    org.resourceId = out.resourceId || "";
+    if (out.resourceName) $("#who").innerHTML = ", " + recLink(String(out.resourceName).trim().split(/\s+/)[0], org.resourceId);
+    state.allAssignments = out.assignments || [];
+    state.lockedIds = new Set(state.allAssignments.filter(a => a.readOnly).map(a => a.assignmentId));
+    state.assignments = state.allAssignments.filter(a => !a.readOnly);
+    state.assignLoaded = true;
+    // The user's own Resource Hero settings: no timer when it's off for them, and the Quick log's buttons.
+    $("#timerBox").hidden = out.showTimer === false;
+    setQuickLog(out);
+    // Names now link to their records: redraw what's already on screen.
+    renderTimerSelect(); if (tm.list) renderTimers();
+    if (state.loaded) renderMatrix();
+    if (!state.assignments.length) {
+      sel.innerHTML = `<option value="">No assignments can take time</option>`;
+      showMsg($("#addMsg"), "You have no open assignments that accept time.", true);
+      return;
+    }
+    sel.innerHTML = `<option value="">Choose an assignment</option>` + state.assignments.map(a =>
+      `<option value="${esc(a.assignmentId)}">${esc(a.assignedTo || a.assignmentName)}${a.role ? " · " + esc(a.role) : ""}</option>`).join("");
+    if (keep && state.assignments.some(a => a.assignmentId === keep)) sel.value = keep;
+    clearMsg($("#addMsg"));
+  } catch (e) {
+    sel.innerHTML = `<option value="">Couldn't load assignments</option>`;
+    $("#tmAssign").innerHTML = `<option value="">Couldn't load assignments</option>`;
+    showMsg($("#addMsg"), errorHtml(e) + `<div><button class="ghost" type="button" id="retryAssign">Try again</button></div>`, true);
+  }
+}
+
+$("#addForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const form = ev.currentTarget, msg = $("#addMsg");
+  const assignmentId = $("#addAssign").value, entryDate = $("#addDate").value, hoursV = $("#addHours").value.trim();
+  const bill = $("#addBill").value, notes = $("#addNotes").value;
+  const problems = [];
+  if (!assignmentId) problems.push("Choose an assignment.");
+  if (!isValidIso(entryDate)) problems.push("Pick a date.");
+  const hErr = checkHours(hoursV); if (hErr) problems.push(hErr);
+  if (notes.length > 500) problems.push("Notes can be at most 500 characters.");
+  if (problems.length) { showMsg(msg, `<strong>Fix the form:</strong> ${esc(problems.join(" "))}`, true); return; }
+  const entry = { assignmentId, entryDate, hours: Number(hoursV) };
+  if (notes.trim()) entry.notes = notes;
+  if (bill) entry.billable = bill === "true";
+  const cat = $("#addCat").value.trim();
+  if (cat) entry.category = cat;
+  setBusy(form, true); showMsg(msg, "Saving…");
+  const r = await write("insertActuals", { entries: [entry] }, msg);
+  setBusy(form, false);
+  if (r.ok) {
+    const a = state.assignments.find(x => x.assignmentId === assignmentId);
+    showMsg(msg, `Logged <b class="num">${fmtH(entry.hours)} h</b> to ${a ? recLink(a.assignedTo || a.assignmentName, a.assignedToId) : "the assignment"} on ${esc(fmtDay(entryDate))}.`);
+    $("#addHours").value = ""; $("#addNotes").value = "";
+    const target = mondayOf(entryDate);
+    if (target !== state.weekStart) { state.weekStart = target; state.editingId = null; state.dayFilter = null; state.mxSel = null; }
+    else if (state.dayFilter && state.dayFilter !== entryDate) { state.dayFilter = entryDate; state.mxSel = null; }
+    loadWeek(); refreshDash();
+    $("#addHours").focus({ preventScroll: true });
+  }
+});
+
+// ---------- edit / delete ----------
+const findEntry = id => state.entries.find(e => e.timeEntryId === id);
+
+$("#ledRows").addEventListener("click", async ev => {
+  const btn = ev.target.closest("button[data-act]"); if (!btn) return;
+  const act = btn.dataset.act;
+  if (act === "edit") {
+    state.editingId = btn.closest("[data-id]").dataset.id;
+    renderLedger();
+    const f = $("form.editing", $("#ledRows")); if (f) f.elements.hours.focus();
+    return;
+  }
+  const form = btn.closest("form.editing"); if (!form) return;
+  const id = form.dataset.id, msg = form.querySelector("[data-msg]");
+  const confirmBox = form.querySelector('[data-box="confirm"]'), mefsBox = form.querySelector('[data-box="mefs"]');
+  if (act === "cancel") { state.editingId = null; renderLedger(); return; }
+  if (act === "del") { clearMsg(msg); mefsBox.hidden = true; confirmBox.hidden = false; confirmBox.querySelector(".danger").focus(); return; }
+  if (act === "delno") { confirmBox.hidden = true; mefsBox.hidden = true; clearMsg(msg); return; }
+  if (act === "delyes" || act === "clearonly") {
+    const input = { timeEntryIds: [id] };
+    if (act === "clearonly") input.clearActualOnly = true;
+    setBusy(form, true); showMsg(msg, act === "clearonly" ? "Clearing logged hours…" : "Deleting…");
+    const r = await write("deleteActuals", input, msg);
+    setBusy(form, false);
+    if (r.ok) {
+      state.editingId = null;
+      flash(act === "clearonly" ? "Cleared the logged hours. Planning values were kept." : "Entry deleted.");
+      loadWeek(); refreshDash();
+    } else if (r.code === "OTHER_MEFS_POPULATED") {
+      clearMsg(msg); confirmBox.hidden = true; mefsBox.hidden = false;
+    } else { confirmBox.hidden = true; }
+  }
+});
+
+$("#ledRows").addEventListener("submit", async ev => {
+  const form = ev.target.closest("form.editing"); if (!form) return;
+  ev.preventDefault();
+  const e = findEntry(form.dataset.id), msg = form.querySelector("[data-msg]");
+  if (!e) { showMsg(msg, "That entry is no longer in this week. Reloading.", true); loadWeek(); return; }
+  const date = form.elements.date.value, hoursV = form.elements.hours.value.trim(), bill = form.elements.bill.value, notes = form.elements.notes.value;
+  const problems = [];
+  if (!isValidIso(date)) problems.push("Pick a date.");
+  const hErr = checkHours(hoursV); if (hErr) problems.push(hErr);
+  if (notes.length > 500) problems.push("Notes can be at most 500 characters.");
+  if (problems.length) { showMsg(msg, `<strong>Fix the form:</strong> ${esc(problems.join(" "))}`, true); return; }
+  const change = { timeEntryId: e.timeEntryId };
+  if (date !== e.entryDate) change.entryDate = date;
+  if (Number(hoursV) !== Number(e.hours)) change.hours = Number(hoursV);
+  const ob = e.billable === true ? "true" : e.billable === false ? "false" : "";
+  if (bill !== ob && bill !== "") change.billable = bill === "true";
+  if (notes !== (e.notes || "")) change.notes = notes;
+  const cat = form.elements.cat.value.trim();
+  if (cat !== (e.category || "")) change.category = cat;
+  if (Object.keys(change).length === 1) { showMsg(msg, "Nothing changed yet."); return; }
+  setBusy(form, true); showMsg(msg, "Saving…");
+  const r = await write("updateActuals", { entries: [change] }, msg);
+  setBusy(form, false);
+  if (r.ok) {
+    state.editingId = null;
+    if (change.entryDate && state.dayFilter) { state.dayFilter = change.entryDate; state.mxSel = state.mxSel && { key: state.mxSel.key, date: change.entryDate }; }
+    flash(change.entryDate && mondayOf(change.entryDate) !== state.weekStart
+      ? `Saved. The entry moved to ${fmtDay(change.entryDate)}, outside this week.` : "Changes saved.");
+    loadWeek(); refreshDash();
+  }
+});
+
+// ---------- dashboard ----------
+// Weekly summary rows (4 weeks back, 4 ahead); they give the Planned tile its hours.
+const dash = { rows: null };
+const num = v => (v == null || isNaN(v)) ? 0 : Number(v);
+
+async function loadSummary() {
+  clearMsg($("#sumMsg"));
+  try {
+    const out = await rh("getMyTimeSummary", { weeksBack: 4, weeksAhead: 4 });
+    dash.rows = (out.rows || []).filter(r => r && r.weekOffset != null && r.weekStart)
+      .sort((a, b) => Number(a.weekOffset) - Number(b.weekOffset));
+  } catch (e) {
+    dash.rows = null;
+    showMsg($("#sumMsg"), errorHtml(e) + `<div><button class="ghost" type="button" id="retrySum">Try again</button></div>`, true);
+  }
+  renderTiles();
+}
+
+function renderTiles() {
+  const r = dash.rows && dash.rows.find(x => x.weekStart === state.weekStart);
+  const set = (k, v) => { $(`[data-tile="${k}"]`).innerHTML = v == null ? "–" : `${fmtH(v)}<small>h</small>`; };
+  const proj = state.loaded ? state.entries.filter(e => entryKind(e) === "Project") : null;
+  const sum = list => list.reduce((a, e) => a + num(e.hours), 0);
+  const logged = proj ? sum(proj) : null;
+  const bill = proj ? sum(proj.filter(e => e.billable === true)) : null;
+  const planned = r ? num(r.projectForecastHours) : null;
+  set("planned", planned); set("logged", logged);
+  set("left", planned != null && logged != null ? Math.max(0, planned - logged) : null);
+  $('[data-tile-note="billable"]').textContent = logged ? `${fmtH(bill)} h billable` : "";
+  $("#logBar").style.width = planned && logged != null ? Math.min(100, (logged / planned) * 100) + "%" : "0%";
+}
+
+
+// Days off, one line each; the first three show, the rest behind "+N more".
+const offState = { rows: null, all: false };
+async function loadTimeOff() {
+  try {
+    const out = await rh("getMyTimeOff", {});
+    const today = todayIso();
+    offState.rows = (out.rows || []).filter(r => r && (r.endDate || r.startDate) >= today)
+      .sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)));
+  } catch (e) {
+    offState.rows = null;
+  }
+  renderTimeOff();
+}
+function renderTimeOff() {
+  const ul = $("#offList"), rows = offState.rows;
+  if (rows == null) { ul.innerHTML = `<li class="wide sub">Couldn't load days off. <button class="textbtn" type="button" id="retryOff">Try again</button></li>`; return; }
+  if (!rows.length) { ul.innerHTML = `<li class="empty">No days off in the next 12 weeks</li>`; return; }
+  const shown = offState.all ? rows : rows.slice(0, 3), more = rows.length - shown.length;
+  ul.innerHTML = shown.map(r => {
+    const isHol = r.kind === "Holiday", u = untilLabel(r), name = r.name || (isHol ? "Holiday" : "Time off");
+    const when = r.endDate && r.endDate !== r.startDate ? `${fmtShort(r.startDate)}–${fmtShort(r.endDate)}` : fmtDay(r.startDate);
+    const tip = [name, isHol ? "Holiday" : r.type || "Time off", r.status, r.hours != null && fmtH(r.hours) + " h", u.text,
+      !isHol && r.status === "Approved" && "To cancel approved time off, ask your approver"].filter(Boolean).join(" · ");
+    const can = typeof canCancelOff === "function" && canCancelOff(r), asking = can && offReq.confirm === r.timeOffRequestId;
+    return `<li title="${esc(tip)}"><i class="kd${isHol ? "" : " off"}" role="img" aria-label="${isHol ? "Holiday" : "Time off"}"></i><span class="d">${esc(when)}</span>` +
+      `<span class="n">${esc(name)}</span><span class="c${u.soon ? " soon" : ""}">${esc(u.text === "Now" ? "now" : u.text.replace(/^in /, ""))}</span>` +
+      `<span class="x">${can && !asking ? `<button type="button" class="textbtn" data-offcancel="${esc(r.timeOffRequestId)}" aria-label="Cancel ${esc(name)}, ${esc(when)}">Cancel</button>` : ""}</span></li>` +
+      (asking ? `<li class="wide"><div class="note-box"><div>Cancel ${esc(name)}, ${esc(offWhen(r.startDate, r.endDate))} (${esc(r.status)})?</div>
+        <div class="actions"><button type="button" class="danger" data-offyes>Cancel request</button><button type="button" class="ghost" data-offkeep>Keep it</button></div></div></li>` : "");
+  }).join("") +
+    (more ? `<li class="wide"><button class="textbtn" type="button" data-upmore>+${more} more</button></li>`
+      : offState.all && rows.length > 3 ? `<li class="wide"><button class="textbtn" type="button" data-upmore>Show fewer</button></li>` : "");
+}
+$("#offList").addEventListener("click", ev => { if (ev.target.closest("[data-upmore]")) { offState.all = !offState.all; renderTimeOff(); } });
+
+// ---------- time off requests ----------
+// Request time off from Coming up, and cancel a request still Open or Submitted. A new request takes
+// the org's default status (some orgs approve at once), so the reply's status is what's shown.
+const OFF_TYPES = ["Vacation", "Sick", "Personal Day"];
+const offReq = { open: false, cap: null, capP: null, hoursEdited: false, confirm: null };
+const canCancelOff = r => !!(r && r.kind !== "Holiday" && r.timeOffRequestId && (r.status === "Open" || r.status === "Submitted"));
+const offWhen = (s, e) => e && e !== s ? `${fmtDay(s)} – ${fmtDay(e)}` : fmtDay(s);
+const offStatusWords = s => s === "Approved" ? "Approved" : s === "Submitted" ? "Submitted — waiting for approval"
+  : s === "Open" ? "Open (not yet submitted for approval)" : s ? s : "Sent; check its status in Resource Hero";
+function nextWorkday() { let d = addDays(todayIso(), 1); while (parseIso(d).getDay() % 6 === 0) d = addDays(d, 1); return d; }
+// The time off touches the week on screen: reload it too.
+function reloadIfOverlaps(s, e) { const ws = state.weekStart; if (s <= addDays(ws, 6) && (e || s) >= ws) loadWeek({ keepMsg: true }); }
+
+// Capacity by day, fetched only when the form first opens; it defaults the hours per day (8 when there's none).
+function loadCapacity() {
+  return offReq.capP || (offReq.capP = rh("getMyCapacity", { weeksBack: 0, weeksAhead: 12 })
+    .then(out => { offReq.cap = new Map((out.days || []).filter(Boolean).map(d => [d.day, num(d.capacityHours)])); })
+    .catch(() => { offReq.cap = null; offReq.capP = null; }));
+}
+const capFor = d => { const c = offReq.cap && offReq.cap.get(d); return c > 0 ? c : 8; };
+
+function openOffForm() {
+  const pop = $("#offPop"), start = nextWorkday();
+  offReq.open = true; offReq.hoursEdited = false; offReq.confirm = null;
+  clearMsg($("#offMsg")); renderTimeOff();
+  pop.innerHTML = `<form class="f" id="offForm" novalidate><h3>Request time off</h3>
+    <div class="grid2">
+      <div class="field"><label for="offStart">From</label><input type="date" id="offStart" name="start" value="${start}" required></div>
+      <div class="field"><label for="offEnd">To <span class="opt">(optional)</span></label><input type="date" id="offEnd" name="end" min="${start}"></div>
+      <div class="field"><label for="offHours">Hours per day</label><input type="number" id="offHours" name="hours" class="num" min="0.01" max="24" step="0.01" inputmode="decimal" value="${capFor(start)}" required></div>
+      <div class="field"><label for="offType">Type</label><select id="offType" name="type"><option value="">No type</option>${OFF_TYPES.map(t => `<option>${esc(t)}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label for="offDesc">Description <span class="opt">(optional)</span></label><input id="offDesc" name="desc" maxlength="80" autocomplete="off"></div>
+    <div class="offsum" id="offSum" aria-live="polite"></div>
+    <div class="actions"><button type="submit" class="primary">Request</button><button type="button" class="ghost" data-offclose>Not now</button></div>
+    <div class="msg" id="offFormMsg" role="status"></div>
+    <p class="rh-help">Nothing is sent until you click Request. Your organization decides whether time off is approved right away or waits for approval.</p></form>`;
+  pop.hidden = false; $("#offReqBtn").setAttribute("aria-expanded", "true");
+  renderOffSum(); $("#offStart").focus();
+  loadCapacity().then(() => {
+    const f = $("#offForm");
+    if (offReq.open && f && !offReq.hoursEdited) { f.elements.hours.value = capFor(f.elements.start.value); renderOffSum(); }
+  });
+}
+function closeOffForm() {
+  offReq.open = false; $("#offPop").hidden = true; $("#offPop").innerHTML = "";
+  $("#offReqBtn").setAttribute("aria-expanded", "false");
+}
+
+// One line, with weekdays, of what Request will send.
+function renderOffSum() {
+  const f = $("#offForm"); if (!f) return;
+  const s = f.elements.start.value, e = f.elements.end.value, h = f.elements.hours.value.trim(), t = f.elements.type.value;
+  $("#offSum").textContent = isValidIso(s)
+    ? [offWhen(s, isValidIso(e) && e > s ? e : ""), h && !checkHours(h) ? fmtH(h) + " h/day" : "", t].filter(Boolean).join(" · ") : "";
+}
+
+$("#offReqBtn").addEventListener("click", () => (offReq.open ? closeOffForm() : openOffForm()));
+$("#offPop").addEventListener("click", ev => { if (ev.target.closest("[data-offclose]")) { closeOffForm(); $("#offReqBtn").focus(); } });
+$("#offPop").addEventListener("input", ev => {
+  const f = ev.target.form; if (!f || f.id !== "offForm") return;
+  if (ev.target.name === "hours") offReq.hoursEdited = true;
+  if (ev.target.name === "start" && isValidIso(ev.target.value)) {
+    f.elements.end.min = ev.target.value;
+    if (!offReq.hoursEdited) f.elements.hours.value = capFor(ev.target.value);
+  }
+  renderOffSum();
+});
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && offReq.open) { closeOffForm(); $("#offReqBtn").focus(); } });
+
+$("#offPop").addEventListener("submit", async ev => {
+  const f = ev.target.closest("#offForm"); if (!f) return;
+  ev.preventDefault();
+  const msg = $("#offFormMsg"), s = f.elements.start.value, e = f.elements.end.value, h = f.elements.hours.value.trim();
+  const t = f.elements.type.value, desc = f.elements.desc.value.trim();
+  const problems = [];
+  if (!isValidIso(s)) problems.push("Pick a start date.");
+  if (e && (!isValidIso(e) || e < s)) problems.push("The end date can't be before the start date.");
+  const hErr = checkHours(h); if (hErr) problems.push(hErr.replace("in one entry", "a day"));
+  if (desc.length > 80) problems.push("The description can be at most 80 characters.");
+  if (problems.length) { showMsg(msg, `<strong>Fix the form:</strong> ${esc(problems.join(" "))}`, true); return; }
+  const input = { startDate: s, hoursPerDay: Number(h) };
+  if (e && e !== s) input.endDate = e;
+  if (t) input.type = t;
+  if (desc) input.description = desc;
+  setBusy(f, true); showMsg(msg, "Requesting…");
+  const r = await write("requestTimeOff", input, msg);
+  setBusy(f, false);
+  if (!r.ok) return;
+  closeOffForm();
+  showMsg($("#offMsg"), `Requested ${esc(t || "time off")}, ${esc(offWhen(s, input.endDate))}: <b>${esc(offStatusWords(r.out.status))}</b>.`);
+  refreshDash(); reloadIfOverlaps(s, input.endDate);
+});
+
+// Cancel, with an inline confirmation under the row.
+$("#offList").addEventListener("click", async ev => {
+  const ask = ev.target.closest("[data-offcancel]");
+  if (ask) { offReq.confirm = ask.dataset.offcancel; clearMsg($("#offMsg")); renderTimeOff(); $("#offList [data-offyes]")?.focus(); return; }
+  if (ev.target.closest("[data-offkeep]")) { offReq.confirm = null; renderTimeOff(); return; }
+  const yes = ev.target.closest("[data-offyes]"); if (!yes) return;
+  const id = offReq.confirm, row = (offState.rows || []).find(r => r.timeOffRequestId === id), msg = $("#offMsg");
+  if (!row) { offReq.confirm = null; renderTimeOff(); return; }
+  setBusy(yes.closest(".note-box"), true); showMsg(msg, "Cancelling…");
+  const r = await write("cancelTimeOff", { timeOffRequestId: id }, msg);
+  offReq.confirm = null;
+  if (r.ok) {
+    showMsg(msg, `Cancelled ${esc(row.name || row.type || "the time off request")}, ${esc(offWhen(row.startDate, row.endDate))}.`);
+    refreshDash(); reloadIfOverlaps(row.startDate, row.endDate);
+  }
+  renderTimeOff();
+});
+
+function refreshDash() { loadSummary(); loadTimeOff(); $("#freshness").textContent = "Up to date · " + new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
+
+// ---------- week matrix ----------
+function renderMatrix() {
+  // Lets stand-alone widgets (Quick log) follow the loaded week and the picked day.
+  document.dispatchEvent(new Event("rh:week"));
+  const host = $("#matrix");
+  if (!state.loaded) { host.innerHTML = `<div class="empty">The matrix appears once your week loads.</div>`; renderLedger(); return; }
+  const days = Array.from({ length: 7 }, (_, i) => addDays(state.weekStart, i)), today = todayIso();
+  const rows = new Map();
+  for (const a of state.assignments) rows.set(a.assignmentId, { name: a.assignedTo || a.assignmentName, sub: a.role, kind: "Project", assignmentId: a.assignmentId, toId: a.assignedToId, cells: {} });
+  for (const e of state.entries) {
+    const kind = entryKind(e), key = rowKey(e);
+    if (!rows.has(key)) rows.set(key, kind === "Project"
+      ? { name: e.assignedTo || e.assignmentName || "Assignment", sub: e.role, kind, assignmentId: e.assignmentId, toId: toId(e.assignmentId, e), cells: {} }
+      : { name: kind === "Holiday" ? "Holidays" : "Time off", sub: "", kind, cells: {} });
+    const r = rows.get(key); r.cells[e.entryDate] = (r.cells[e.entryDate] || 0) + num(e.hours);
+  }
+  for (const [k, r] of rows) r.key = k;
+  state.mxRows = rows;
+  const list = [...rows.values()].sort((a, b) => (a.kind === "Project" ? 0 : a.kind === "Holiday" ? 1 : 2) - (b.kind === "Project" ? 0 : b.kind === "Holiday" ? 1 : 2));
+  if (!list.length) { host.innerHTML = `<div class="empty">No assignments or time this week.</div>`; return; }
+  const colCls = d => [d === state.dayFilter ? "colsel" : d === today && "today", parseIso(d).getDay() % 6 === 0 && "wkend"].filter(Boolean).join(" ");
+  const cell = v => v ? fmtH(v) : `<span class="zero">·</span>`;
+  const dayTot = {}; let grand = 0;
+  let body = list.map(r => {
+    let rowTot = 0;
+    const why = rowLockReason(r);
+    const tds = days.map(d => {
+      const v = r.cells[d] || 0; rowTot += v; dayTot[d] = (dayTot[d] || 0) + v;
+      // Rows that can't take new time show their hours as plain text: no button, no focus, no click.
+      if (why) return `<td class="num ${colCls(d)}" title="${esc(why)}"><span class="mxro ${heat(v)}">${cell(v)}</span></td>`;
+      const on = state.mxSel && state.mxSel.key === r.key && state.mxSel.date === d;
+      const inner = `<button type="button" data-key="${esc(r.key)}" data-date="${d}" class="${heat(v)}" aria-pressed="${on}" aria-label="${esc(r.name)}, ${esc(fmtDay(d))}: ${v ? fmtH(v) + " hours" : "no time"}. Show entries and add one">${cell(v)}</button>`;
+      return `<td class="num ${colCls(d)}">${inner}</td>`;
+    }).join("");
+    grand += rowTot;
+    const sub = rowSub(r);
+    return `<tr${r.kind !== "Project" ? ` class="offrow"` : ""}><th class="rec" scope="row">${r.kind === "Project" ? adot(r.assignmentId) + recLink(r.name, r.toId) : esc(r.name)}${sub ? `<small>${esc(sub)}</small>` : ""}</th>${tds}<td class="num tot">${rowTot ? fmtH(rowTot) : cell(0)}</td></tr>`;
+  }).join("");
+  host.innerHTML = `<table class="mx"><thead><tr><th class="rec">Record</th>` +
+    days.map(d => { const dt = parseIso(d); return `<th class="${colCls(d)}"><span>${esc(dt.toLocaleDateString(undefined, { weekday: "short" }))}</span><b class="num">${dt.getDate()}</b></th>`; }).join("") +
+    `<th class="tot">Total</th></tr></thead><tbody>${body}</tbody><tfoot><tr><th class="rec" scope="row">Daily total</th>` +
+    days.map(d => `<td class="num ${colCls(d)}">${cell(dayTot[d] || 0)}</td>`).join("") +
+    `<td class="num tot">${fmtH(grand)}</td></tr></tfoot></table>`;
+  renderLedger();
+}
+
+// Why a grid row can't take new time (its cells then aren't clickable); null for an open assignment.
+function rowLockReason(r) {
+  if (r.kind === "Holiday") return "Holidays come from your holiday schedule";
+  if (r.kind === "TimeOff") return "Time off comes from your time off requests";
+  if (state.assignments.some(a => a.assignmentId === r.assignmentId)) return null;
+  if (state.lockedIds.has(r.assignmentId)) return "This assignment is read only";
+  if (state.assignLoaded) return "Archived: correct existing entries in the list below; no new time";
+  return "Your assignments are still loading";
+}
+const canTakeTime = id => state.assignments.some(a => a.assignmentId === id);
+
+// Role, plus whether the assignment is locked, archived or has a timer.
+function rowSub(r) {
+  if (r.kind !== "Project") return r.sub || "";
+  const bits = [r.sub];
+  if (state.lockedIds.has(r.assignmentId)) bits.push("locked");
+  else if (state.assignLoaded && !state.allAssignments.some(a => a.assignmentId === r.assignmentId)) bits.push("archived");
+  const t = tm.list && tm.list.find(x => x.assignmentId === r.assignmentId);
+  if (t) bits.push(t.status === "Running" ? "timer running" : "timer paused");
+  return bits.filter(Boolean).join(" · ");
+}
+
+function rowKey(e) {
+  const kind = entryKind(e);
+  return kind === "Project" ? (e.assignmentId || "n:" + (e.assignedTo || e.assignmentName)) : kind;
+}
+
+// Each assignment keeps one color from the brand data-series palette, in assignment-list order.
+const ASG_COLORS = ["#1695ae", "#62b062", "#e3c336", "#608e81", "#bc6051", "#0e4858", "#badce3"];
+function asgColor(id) {
+  const i = state.allAssignments.findIndex(a => a.assignmentId === id);
+  if (i >= 0) return ASG_COLORS[i % ASG_COLORS.length];
+  let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return ASG_COLORS[h % ASG_COLORS.length];
+}
+const adot = id => `<i class="adot" style="background:${asgColor(id)}" aria-hidden="true"></i>`;
+const heat = v => !v ? "" : v < 1 ? "h1" : v < 2.5 ? "h2" : v < 5 ? "h3" : "h4";
+
+// ---------- entries ledger ----------
+const KIND_ORDER = { Project: 0, Holiday: 1, TimeOff: 2 };
+function ledgerList() {
+  const f = state.dayFilter;
+  return state.entries.filter(e => !f || e.entryDate === f).sort((a, b) =>
+    a.entryDate.localeCompare(b.entryDate) || KIND_ORDER[entryKind(a)] - KIND_ORDER[entryKind(b)] ||
+    String(a.assignedTo || "").localeCompare(String(b.assignedTo || "")) || String(a.role || "").localeCompare(String(b.role || "")));
+}
+
+function renderLedger() {
+  const host = $("#ledRows"), f = state.dayFilter, sel = state.mxSel;
+  $("#ledFilter").innerHTML = f
+    ? `<span class="filter">${esc(fmtDay(f))}<button type="button" data-ledclear aria-label="Show the whole week">×</button></span>`
+    : `<span class="sub">Whole week</span>`;
+  if (!state.loaded) { host.innerHTML = `<div class="ledempty">Entries appear once your week loads.</div>`; $("#ledSum").textContent = ""; return; }
+  const list = ledgerList(), proj = list.filter(e => entryKind(e) === "Project");
+  const hours = proj.reduce((a, e) => a + num(e.hours), 0), bill = proj.filter(e => e.billable === true).reduce((a, e) => a + num(e.hours), 0);
+  const off = list.filter(e => entryKind(e) !== "Project").reduce((a, e) => a + num(e.hours), 0);
+  $("#ledSum").innerHTML = proj.length || off
+    ? `${proj.length} ${proj.length === 1 ? "entry" : "entries"} · <b class="num">${fmtH(hours)} h</b> · ${fmtH(bill)} h billable${off ? ` · ${fmtH(off)} h days off` : ""}`
+    : "";
+  if (!list.length) {
+    host.innerHTML = `<div class="ledempty">${f ? `Nothing logged on ${esc(fmtDay(f))} yet.` : "Nothing logged this week yet."} Add it in the row above.</div>`;
+    return;
+  }
+  host.innerHTML = list.map(e => {
+    const kind = entryKind(e), isProj = kind === "Project", locked = isProj && state.lockedIds.has(e.assignmentId);
+    if (isProj && !locked && state.editingId === e.timeEntryId) return editRowHtml(e);
+    const hit = sel && rowKey(e) === sel.key && e.entryDate === sel.date;
+    const name = isProj
+      ? `${adot(e.assignmentId)}${recLink(e.assignedTo || e.assignmentName || "Assignment", toId(e.assignmentId, e))}${e.role ? ` <span class="sub">· ${esc(e.role)}</span>` : ""}${locked ? ` <span class="chip lock">Locked</span>` : ""}`
+      : `${kind === "Holiday" ? "Holiday" : "Time off"} <span class="chip off">can't be edited</span>`;
+    const billCell = !isProj ? `<span class="sub">–</span>`
+      : e.billable === true ? `<span class="chip bill">Billable</span>` : e.billable === false ? `<span class="chip">Non-billable</span>` : `<span class="sub">–</span>`;
+    return `<div class="lg lrow${hit ? " hit" : ""}${isProj ? "" : " offrow"}" data-id="${esc(e.timeEntryId)}">
+      <div class="cellv sub">${esc(fmtDay(e.entryDate))}</div>
+      <div class="cellv clip" title="${esc([e.assignedTo, e.role].filter(Boolean).join(" · "))}">${name}</div>
+      <div class="cellv r hrsv">${fmtH(e.hours)}</div>
+      <div class="cellv">${billCell}</div>
+      <div class="cellv clip sub">${esc(e.category || "–")}</div>
+      <div class="cellv clip" title="${esc(e.notes || "")}">${e.notes ? esc(e.notes) : `<span class="sub">No notes</span>`}</div>
+      <div class="cellv act">${isProj && !locked ? `<button type="button" class="textbtn" data-act="edit">Edit</button>` : ""}</div>
+    </div>`;
+  }).join("");
+}
+
+$("#ledFilter").addEventListener("click", ev => {
+  if (!ev.target.closest("[data-ledclear]")) return;
+  state.dayFilter = null; state.mxSel = null; state.editingId = null;
+  renderMatrix();
+});
+
+$("#matrix").addEventListener("click", ev => {
+  const b = ev.target.closest("button[data-key]"); if (!b) return;
+  const row = state.mxRows && state.mxRows.get(b.dataset.key);
+  if (!row || rowLockReason(row)) return;
+  const same = state.mxSel && state.mxSel.key === b.dataset.key && state.mxSel.date === b.dataset.date;
+  state.mxSel = same ? null : { key: b.dataset.key, date: b.dataset.date };
+  state.dayFilter = same ? null : b.dataset.date;
+  state.editingId = null;
+  renderMatrix();
+  if (!state.mxSel) return;
+  const r = state.mxRows && state.mxRows.get(state.mxSel.key);
+  primeLog(r && r.kind === "Project" && state.assignments.some(a => a.assignmentId === r.assignmentId) ? r.assignmentId : null, state.mxSel.date);
+});
+// Fill the entry row with the cell's day (and assignment, when it can take time) and put the cursor in Hours.
+let primeTimer;
+function primeLog(assignmentId, date) {
+  if (assignmentId) $("#addAssign").value = assignmentId;
+  $("#addDate").value = date;
+  clearMsg($("#addMsg"));
+  const row = $("#addForm");
+  row.scrollIntoView({ behavior: smooth(), block: "nearest" });
+  $("#addHours").focus({ preventScroll: true });
+  const card = row;
+  card.classList.remove("primed"); void card.offsetWidth; card.classList.add("primed");
+  clearTimeout(primeTimer); primeTimer = setTimeout(() => card.classList.remove("primed"), 1400);
+}
+const smooth = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+
+
+// ---------- timers ----------
+const tm = { list: null, fetchedAt: 0, pop: null, busy: false };
+const ICON = {
+  play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5.5" width="4" height="13" rx="1" fill="currentColor"/><rect x="13.5" y="5.5" width="4" height="13" rx="1" fill="currentColor"/></svg>',
+  stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2" fill="currentColor"/></svg>',
+  discard: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+};
+const assignmentById = id => state.allAssignments.find(a => a.assignmentId === id);
+const elapsedNow = t => Number(t.elapsedSeconds || 0) + (t.status === "Running" ? Math.max(0, Math.floor((Date.now() - tm.fetchedAt) / 1000)) : 0);
+const fmtClock = sec => `${Math.floor(sec / 3600)}:${String(Math.floor(sec % 3600 / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+// The one timer shown in full: the running one, else the first paused one.
+const activeTimer = () => (tm.list && (tm.list.find(t => t.status === "Running") || tm.list[0])) || null;
+const findTimer = id => tm.list && tm.list.find(t => t.timerId === id);
+
+async function loadTimers() {
+  try {
+    const out = await rh("getMyTimers", {});
+    tm.list = Array.isArray(out.timers) ? out.timers : [];
+    tm.fetchedAt = Date.now();
+  } catch (e) {
+    tm.list = null;
+  }
+  if (tm.pop && !findTimer(tm.pop.id)) { tm.pop = null; renderTmPop(); }
+  renderTimers(); renderTimerSelect();
+  if (state.loaded) renderMatrix();
+}
+
+function renderTimers() {
+  const host = $("#tmActive");
+  if (tm.list == null) { host.innerHTML = `<div class="tmrow"><span class="sub">Timers couldn't be loaded.</span><button class="ghost" type="button" id="retryTm">Try again</button></div>`; return; }
+  const t = activeTimer();
+  if (!t) { host.innerHTML = ""; return; }
+  const run = t.status === "Running", a = assignmentById(t.assignmentId), name = t.assignedTo || t.assignmentName || "Assignment";
+  // A paused timer on a locked or archived assignment can't resume.
+  const noResume = !run && state.assignLoaded && !canTakeTime(t.assignmentId);
+  const detail = [run ? "Running" : "Paused", a && a.role, t.notes].filter(Boolean).join(" · ");
+  const others = tm.list.filter(x => x !== t);
+  host.innerHTML = `<div class="tmrow" data-tid="${esc(t.timerId)}">
+      <i class="dot${run ? "" : " paused"}" aria-hidden="true"></i>
+      <div class="tmname" title="${esc(name + " · " + detail)}"><b>${recLink(name, toId(t.assignmentId, t))}</b><small>${esc(detail)}</small></div>
+      <span class="clock${run ? "" : " paused"}" data-clock="${esc(t.timerId)}">${fmtClock(elapsedNow(t))}</span>
+      <div class="tmbtns">
+        ${noResume ? "" : `<button type="button" class="iconbtn" data-tact="${run ? "pause" : "resume"}" aria-label="${run ? "Pause" : "Resume"} timer" title="${run ? "Pause" : "Resume"}">${run ? ICON.pause : ICON.play}</button>`}
+        <button type="button" class="iconbtn go" data-tact="stop" aria-label="Stop and log" title="Stop and log ${fmtH(t.hoursIfStopped)} h">${ICON.stop}</button>
+        <button type="button" class="iconbtn bad" data-tact="cancel" aria-label="Discard timer" title="Discard">${ICON.discard}</button>
+      </div>
+    </div>` +
+    (others.length ? `<div class="tmothers">${others.map(o => {
+      const orun = o.status === "Running";
+      if (!orun && state.assignLoaded && !canTakeTime(o.assignmentId))
+        return `<span class="chipbtn" title="This assignment can't take time now"><span>${esc(o.assignedTo || o.assignmentName || "Timer")}</span><span class="num" data-clock="${esc(o.timerId)}">${fmtClock(elapsedNow(o))}</span></span>`;
+      return `<button type="button" class="chipbtn" data-tid="${esc(o.timerId)}" data-tact="${orun ? "pause" : "resume"}" title="${orun ? "Pause" : "Resume"} ${esc(o.assignedTo || "")}">${orun ? ICON.pause : ICON.play}<span>${esc(o.assignedTo || o.assignmentName || "Timer")}</span><span class="num" data-clock="${esc(o.timerId)}">${fmtClock(elapsedNow(o))}</span></button>`;
+    }).join("")}</div>` : "");
+  setTmBusy(tm.busy);
+}
+
+// Stop form or discard confirmation, opened under the timer box.
+function renderTmPop() {
+  const pop = $("#tmPop"), t = tm.pop && findTimer(tm.pop.id);
+  if (!t) { tm.pop = null; pop.hidden = true; pop.innerHTML = ""; return; }
+  const name = t.assignedTo ? recLink(t.assignedTo, toId(t.assignmentId, t)) : "this assignment", id = esc(t.timerId);
+  if (tm.pop.mode === "cancel") {
+    pop.innerHTML = `<div data-tid="${id}" class="f"><h3>Discard this timer?</h3>
+      <div class="sub">${esc(fmtClock(elapsedNow(t)))} tracked on ${name}. Nothing is logged, and this can't be undone.</div>
+      <div class="actions"><button type="button" class="danger" data-tact="cancelyes">Discard timer</button><button type="button" class="ghost" data-tact="close">Keep it</button></div></div>`;
+  } else {
+    const p = "t-" + String(t.timerId).replace(/[^A-Za-z0-9]/g, "");
+    pop.innerHTML = `<form class="f tmstop" novalidate data-tid="${id}"><h3>Stop and log ${fmtH(t.hoursIfStopped)} h</h3>
+      <div class="sub">${name} · logs to ${esc(fmtDay(t.targetDate))}, after your org's rounding</div>
+      <div class="field"><label for="${p}-notes">Notes</label><textarea id="${p}-notes" name="notes" maxlength="500" rows="2">${esc(t.notes || "")}</textarea></div>
+      <div class="field"><label for="${p}-bill">Billable</label><select id="${p}-bill" name="bill"><option value="">Org default</option><option value="true">Billable</option><option value="false">Non-billable</option></select></div>
+      <div class="actions"><button type="submit" class="primary">Stop and log</button><button type="button" class="ghost" data-tact="close">Not yet</button></div></form>`;
+  }
+  pop.hidden = false;
+  setTmBusy(tm.busy);
+  const f = pop.querySelector("textarea, .danger"); if (f) f.focus();
+}
+
+function renderTimerSelect() {
+  const sel = $("#tmAssign"), keep = sel.value;
+  if (!state.assignLoaded) return;
+  if (!state.assignments.length) { sel.innerHTML = `<option value="">No assignments can take time</option>`; return; }
+  const has = id => tm.list && tm.list.find(t => t.assignmentId === id);
+  sel.innerHTML = `<option value="">${activeTimer() ? "Start another timer…" : "Start a timer on…"}</option>` + state.assignments.map(a => {
+    const t = has(a.assignmentId), tag = t ? (t.status === "Running" ? " (running)" : " (paused)") : "";
+    return `<option value="${esc(a.assignmentId)}">${esc(a.assignedTo || a.assignmentName)}${a.role ? " · " + esc(a.role) : ""}${tag}</option>`;
+  }).join("");
+  if (keep && state.assignments.some(a => a.assignmentId === keep)) sel.value = keep;
+}
+
+function setTmBusy(busy) {
+  tm.busy = busy;
+  document.querySelectorAll("#timerBox button").forEach(b => (b.disabled = busy));
+}
+
+let tmMsgTimer;
+// Runs one timer action, shows its outcome, then reloads timers (and the week when time was logged).
+async function timerAct(tool, input, done, logsTime) {
+  const msg = $("#tmMsg");
+  clearTimeout(tmMsgTimer);
+  setTmBusy(true); showMsg(msg, "Working…");
+  try {
+    const out = await rh(tool, input);
+    tm.pop = null; renderTmPop();
+    showMsg(msg, done(out));
+    tmMsgTimer = setTimeout(() => clearMsg(msg), 6000);
+    return out;
+  } catch (e) {
+    showMsg(msg, errorHtml(e, { write: true }), true);
+    return null;
+  } finally {
+    setTmBusy(false);
+    await loadTimers();
+    if (logsTime) { loadWeek({ keepMsg: true }); refreshDash(); }
+  }
+}
+const pausedNote = out => {
+  const others = (Array.isArray(out.timers) ? out.timers : []).filter(t => out.timer && t.timerId !== out.timer.timerId);
+  return others.length ? ` Paused ${others.map(t => esc(t.assignedTo || "another timer")).join(", ")}.` : "";
+};
+
+$("#timerBox").addEventListener("click", ev => {
+  const b = ev.target.closest("button[data-tact]"); if (!b) return;
+  const holder = b.closest("[data-tid]"), t = holder && findTimer(holder.dataset.tid);
+  if (!t) return;
+  const act = b.dataset.tact, id = t.timerId;
+  if (act === "stop" || act === "cancel") { tm.pop = tm.pop && tm.pop.id === id && tm.pop.mode === act ? null : { id, mode: act }; clearMsg($("#tmMsg")); renderTmPop(); return; }
+  if (act === "close") { tm.pop = null; renderTmPop(); return; }
+  if (act === "pause") timerAct("pauseTimer", { timerId: id }, () => `Paused the timer on ${esc(t.assignedTo)}.`);
+  if (act === "resume") timerAct("startTimer", { assignmentId: t.assignmentId }, out => esc(out.message || "Resumed the timer.") + pausedNote(out));
+  if (act === "cancelyes") timerAct("cancelTimer", { timerId: id }, () => `Discarded the timer on ${esc(t.assignedTo)}. Nothing was logged.`);
+});
+
+$("#tmPop").addEventListener("submit", ev => {
+  const form = ev.target.closest("form.tmstop"); if (!form) return;
+  ev.preventDefault();
+  const t = findTimer(form.dataset.tid); if (!t) return;
+  const input = { timerId: t.timerId, notes: form.elements.notes.value };
+  if (form.elements.bill.value) input.billable = form.elements.bill.value === "true";
+  timerAct("stopTimer", input, out => `Logged <b class="num">${fmtH(out.hoursLogged)} h</b> to ${esc(t.assignedTo)} on ${esc(fmtDay(t.targetDate))}.`, true);
+});
+
+// Picking an assignment starts its timer (or resumes its paused one); the picker then resets.
+$("#tmStart").addEventListener("submit", ev => ev.preventDefault());
+$("#tmAssign").addEventListener("change", ev => {
+  const assignmentId = ev.target.value;
+  if (!assignmentId || tm.busy) return;
+  ev.target.value = "";
+  timerAct("startTimer", { assignmentId }, out => esc(out.message || "Started the timer.") + pausedNote(out));
+});
+
+// Close the popover on an outside click or Escape.
+document.addEventListener("click", ev => { if (tm.pop && !$("#timerBox").contains(ev.target)) { tm.pop = null; renderTmPop(); } });
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && tm.pop) { tm.pop = null; renderTmPop(); $("#timerBox [data-tact=stop]")?.focus(); } });
+
+// Running clocks tick every second; while one runs, refresh from Resource Hero each minute (not while the popover is open).
+setInterval(() => {
+  if (!tm.list || !tm.list.some(t => t.status === "Running")) return;
+  for (const t of tm.list) for (const el of document.querySelectorAll(`[data-clock="${CSS.escape(t.timerId)}"]`)) el.textContent = fmtClock(elapsedNow(t));
+  if (!tm.pop && !tm.busy && Date.now() - tm.fetchedAt > 60000) loadTimers();
+}, 1000);
+
+// ---------- quick log ----------
+// Tap tracking, as in Resource Hero's own: each tap adds its increment to a pending total for that
+// assignment; QL_WAIT after the last tap, the total saves as one entry (billable left to the org
+// default) on the day shown in the card's date control, which also follows the day picked in the
+// grid. Each row ends with that day's logged hours (planned under it), and the card ends with the
+// day total. Self-contained: its card, this block, and the setQuickLog call in loadAssignments.
+// It follows the week through the "rh:week" event that renderMatrix sends.
+const QL_WAIT = 1500, QL_UNDO = 10000, QL_FEW = 5, QL_MAX_WEEKS = 26;
+const ql = { incs: [], show: false, pend: new Map(), saving: new Map(), done: new Map(), all: false,
+  day: todayIso(), seenFilter: null, seenSeq: -1, weekTried: false,
+  plan: new Map(), planWeeks: new Set(), planBusy: new Set(), days: new Map(), dayBusy: new Set() };
+
+// From the getMyAssignments reply: the user's buttons, smallest first, and whether tap tracking is on.
+// Runs on every refresh, so it also drops the cached days and plans.
+function setQuickLog(out) {
+  ql.incs = (Array.isArray(out.tapIncrements) ? out.tapIncrements : [])
+    .map(t => ({ label: String((t && t.label) || "").trim(), hours: Number(t && t.hours) }))
+    .filter(t => t.hours > 0 && t.hours <= 24)
+    .map(t => ({ label: t.label || fmtH(t.hours) + " h", hours: t.hours }))
+    .sort((a, b) => a.hours - b.hours);
+  ql.show = out.showTapTracking !== false && ql.incs.length > 0;
+  ql.plan.clear(); ql.planWeeks.clear(); ql.days.clear();
+  renderQuickLog();
+  qlEnsureData();
+}
+
+// ----- the day's data -----
+const qlInWeek = d => state.loaded && d >= state.weekStart && d <= addDays(state.weekStart, 6);
+const qlWeekOffset = d => Math.round((parseIso(mondayOf(d)) - parseIso(mondayOf(todayIso()))) / (7 * 864e5));
+
+// Project entries logged on a day: from the week on screen, else from a one-day fetch; null while unknown.
+function qlEntries(day) {
+  const list = qlInWeek(day) ? state.entries : ql.days.get(day);
+  return list ? list.filter(e => e.entryDate === day && entryKind(e) === "Project") : null;
+}
+const qlLogged = (aid, day) => { const l = qlEntries(day); return l ? l.filter(e => e.assignmentId === aid).reduce((s, e) => s + num(e.hours), 0) : null; };
+// Planned hours for one assignment (or all, when aid is null); null when that week's forecast isn't loaded.
+function qlPlanned(aid, day) {
+  if (!ql.planWeeks.has(mondayOf(day))) return null;
+  const m = ql.plan.get(day); if (!m) return 0;
+  return aid == null ? [...m.values()].reduce((a, b) => a + b, 0) : m.get(aid) || 0;
+}
+
+// Fetch what the shown day needs: its entries when it's outside the week on screen, and its week's forecast.
+function qlEnsureData() {
+  if (!ql.show) return;
+  const day = ql.day, off = qlWeekOffset(day);
+  if (ql.weekTried && !qlInWeek(day) && !ql.days.has(day)) qlLoadDay(day);
+  // getMyForecast takes weeks relative to this one (0-26 each way); beyond that, no plan.
+  if (Math.abs(off) <= QL_MAX_WEEKS && !ql.planWeeks.has(mondayOf(day))) qlLoadPlan(Math.max(0, -off), off >= 0 ? Math.max(1, off) : 0);
+}
+async function qlLoadDay(day) {
+  if (ql.dayBusy.has(day)) return;
+  ql.dayBusy.add(day);
+  try {
+    const out = await rh("getMyTrackedTime", { startDate: day, endDate: day });
+    ql.days.set(day, Array.isArray(out.entries) ? out.entries : []);
+  } catch (e) {
+    // the totals show – until the next refresh
+  } finally { ql.dayBusy.delete(day); }
+  if (day === ql.day) renderQlTotals();
+}
+async function qlLoadPlan(weeksBack, weeksAhead) {
+  const key = weeksBack + "|" + weeksAhead;
+  if (ql.planBusy.has(key)) return;
+  ql.planBusy.add(key);
+  try {
+    const out = await rh("getMyForecast", { weeksBack, weeksAhead });
+    const first = addDays(mondayOf(todayIso()), -7 * weeksBack);
+    for (let w = 0; w <= weeksBack + weeksAhead; w++) {
+      const ws = addDays(first, 7 * w);
+      ql.planWeeks.add(ws);
+      for (let i = 0; i < 7; i++) ql.plan.set(addDays(ws, i), new Map());
+    }
+    for (const r of out.rows || []) {
+      if (!r || r.kind !== "Project" || !r.assignmentId || !ql.plan.has(r.forecastDate)) continue;
+      const m = ql.plan.get(r.forecastDate);
+      m.set(r.assignmentId, (m.get(r.assignmentId) || 0) + num(r.hours));
+    }
+  } catch (e) {
+    // rows then show logged hours only
+  } finally { ql.planBusy.delete(key); }
+  renderQuickLog();
+}
+// A save or undo landed: count it at once, then refetch the shown day when it isn't in the week on screen.
+function qlNoteEntry(e, remove) {
+  for (const list of [qlInWeek(e.entryDate) ? state.entries : null, ql.days.get(e.entryDate)]) {
+    if (!list) continue;
+    const i = list.findIndex(x => x.timeEntryId === e.timeEntryId);
+    if (remove && i >= 0) list.splice(i, 1);
+    if (!remove && i < 0) list.push(e);
+  }
+  for (const k of [...ql.days.keys()]) if (k !== ql.day) ql.days.delete(k);
+  if (ql.days.has(ql.day)) { ql.dayBusy.delete(ql.day); qlLoadDay(ql.day); }
+  renderQlTotals();
+}
+
+// ----- the day -----
+function setQlDay(d) {
+  if (!isValidIso(d) || d === ql.day) return;
+  // Taps still pending save to the day they were captured on, then the day changes.
+  for (const [aid, p] of ql.pend) { clearTimeout(p.timer); qlSave(aid); }
+  ql.day = d;
+  renderQuickLog(); qlEnsureData();
+}
+function renderQlDay() {
+  const d = ql.day, today = d === todayIso();
+  $("#qlWd").textContent = today ? "Today" : parseIso(d).toLocaleDateString(undefined, { weekday: "short" });
+  $("#qlDayIn").value = d;
+  $("#qlToday").hidden = today;
+}
+$("#qlDate").addEventListener("click", ev => {
+  const step = ev.target.closest("[data-qlstep]");
+  if (step) setQlDay(addDays(ql.day, Number(step.dataset.qlstep)));
+  if (ev.target.closest("#qlToday")) setQlDay(todayIso());
+});
+$("#qlDayIn").addEventListener("change", ev => { if (isValidIso(ev.target.value)) setQlDay(ev.target.value); });
+
+// The grid picked or cleared a day, or the week reloaded.
+document.addEventListener("rh:week", () => {
+  ql.weekTried = true;
+  if (state.dayFilter !== ql.seenFilter) {
+    const was = ql.seenFilter; ql.seenFilter = state.dayFilter;
+    if (state.dayFilter) setQlDay(state.dayFilter);
+    else if (was && ql.day === was) setQlDay(todayIso());
+  }
+  // A reload of the week may follow a save elsewhere on the page: drop days fetched on their own.
+  if (state.loaded && ql.seenSeq !== state.loadSeq) { ql.seenSeq = state.loadSeq; for (const k of [...ql.days.keys()]) if (k !== ql.day) ql.days.delete(k); }
+  if (!ql.show) return;
+  renderQlTotals(); qlEnsureData();
+});
+
+// ----- rendering -----
+function renderQuickLog() {
+  $("#quickLog").hidden = !ql.show;
+  if (!ql.show) return;
+  const day = ql.day;
+  renderQlDay();
+  const host = $("#qlRows");
+  if (!state.assignments.length) { host.innerHTML = `<div class="empty">You have no open assignments that accept time.</div>`; $("#qlMore").innerHTML = ""; renderQlTotals(); return; }
+  // Planned on the day first, most planned first; the rest keep their order.
+  const list = state.assignments.map((a, i) => ({ a, i, y: qlPlanned(a.assignmentId, day) || 0 }))
+    .sort((p, q) => q.y - p.y || p.i - q.i);
+  const planned = list.filter(r => r.y > 0).length;
+  const few = list.length > QL_FEW ? (planned ? planned : QL_FEW) : list.length;
+  const shown = ql.all ? list : list.slice(0, few), rest = list.length - few;
+  const btns = ql.incs.map((t, i) => `<button type="button" data-inc="${i}" title="Add ${esc(fmtH(t.hours))} h">${esc(t.label)}</button>`).join("");
+  host.innerHTML = shown.map(({ a }) => `<div class="qlrow" data-aid="${esc(a.assignmentId)}">
+      <div class="qlname">${adot(a.assignmentId)}${recLink(a.assignedTo || a.assignmentName || "Assignment", a.assignedToId)}${a.role ? `<small>${esc(a.role)}</small>` : ""}</div>
+      <div class="qlbtns" role="group" aria-label="${esc("Add time to " + (a.assignedTo || a.assignmentName || "assignment"))}">${btns}</div>
+      <div class="qlpend" data-pend aria-live="polite"></div>
+      <div class="qltot num" data-tot></div>
+    </div>`).join("");
+  $("#qlMore").innerHTML = rest > 0 ? `<button type="button" class="textbtn" data-qlall>${ql.all ? "Show fewer" : `Show all (${list.length})`}</button>` : "";
+  shown.forEach(({ a }) => renderQlPend(a.assignmentId));
+  renderQlTotals();
+}
+
+// Each row's logged hours on the day (planned under it), and the day total for all project time.
+function renderQlTotals() {
+  if (!ql.show) return;
+  const day = ql.day, list = qlEntries(day);
+  for (const el of document.querySelectorAll("#qlRows [data-aid]")) {
+    const x = qlLogged(el.dataset.aid, day), y = qlPlanned(el.dataset.aid, day);
+    el.querySelector("[data-tot]").innerHTML = (x ? `<b>${fmtH(x)} h</b>` : `<span class="zero">${x == null ? "–" : "0 h"}</span>`) +
+      (y ? `<small>of ${fmtH(y)} h</small>` : "");
+  }
+  const tot = list && list.reduce((s, e) => s + num(e.hours), 0), plan = qlPlanned(null, day);
+  $("#qlFoot").innerHTML = `Day total <b class="num">${tot == null ? "–" : fmtH(tot) + " h"}</b>${plan ? ` <span class="sub num">of ${fmtH(plan)} h planned</span>` : ""}`;
+}
+
+// The pending total with its countdown bar and ×, else "Saving…", else "Logged · Undo" (with the day when it isn't the one shown).
+function renderQlPend(aid) {
+  const el = $(`#qlRows [data-aid="${CSS.escape(aid)}"] [data-pend]`); if (!el) return;
+  const p = ql.pend.get(aid), s = ql.saving.get(aid), d = ql.done.get(aid);
+  const onDay = x => x.date !== ql.day ? ` on ${esc(fmtShort(x.date))}` : "";
+  el.innerHTML = p
+    ? `<b class="num">+${fmtH(p.hours)} h</b><span class="qltick" title="Saves when the bar runs out" aria-hidden="true"><i style="animation-delay:-${Math.min(QL_WAIT, Date.now() - p.last)}ms"></i></span>` +
+      `<button type="button" class="qlx" data-qlcancel aria-label="Cancel ${fmtH(p.hours)} hours" title="Cancel">×</button>`
+    : s ? `<span class="sub">Saving ${fmtH(s.hours)} h${onDay(s)}…</span>`
+    : d && d.undoing ? `<span class="sub">Undoing…</span>`
+    : d ? `<span class="qlok">✓ Logged ${fmtH(d.hours)} h${onDay(d)}</span>${d.recordId ? ` · <button type="button" class="textbtn" data-qlundo aria-label="Undo ${fmtH(d.hours)} hours">Undo</button>` : ""}` : "";
+}
+
+// ----- taps, saves, undo -----
+function qlTap(aid, inc) {
+  if (!inc) return;
+  const p = ql.pend.get(aid) || { hours: 0, date: ql.day };
+  const next = Math.round((p.hours + inc.hours) * 100) / 100;
+  if (next > 24) { showMsg($("#qlMsg"), "<strong>One entry can't be more than 24 hours.</strong> Let this one save, or cancel it and start again.", true); return; }
+  clearTimeout(p.timer);
+  p.hours = next; p.last = Date.now();
+  p.timer = setTimeout(() => qlSave(aid), QL_WAIT);
+  ql.pend.set(aid, p); ql.done.delete(aid);
+  renderQlPend(aid);
+}
+
+function qlCancel(aid) {
+  const p = ql.pend.get(aid); if (!p) return;
+  clearTimeout(p.timer); ql.pend.delete(aid);
+  renderQlPend(aid);
+}
+
+const qlName = aid => { const a = assignmentById(aid); return a ? a.assignedTo || a.assignmentName : "this assignment"; };
+
+async function qlSave(aid) {
+  const p = ql.pend.get(aid); if (!p) return;
+  ql.pend.delete(aid); ql.saving.set(aid, { hours: p.hours, date: p.date });
+  clearMsg($("#qlMsg")); renderQlPend(aid);
+  const msg = $("#qlMsg");
+  const r = await write("insertActuals", { entries: [{ assignmentId: aid, entryDate: p.date, hours: p.hours }] }, msg);
+  ql.saving.delete(aid);
+  if (r.ok) {
+    // The new entry's Id lets Undo delete it for a few seconds.
+    const res = Array.isArray(r.out.results) ? r.out.results[0] : null;
+    const d = { hours: p.hours, date: p.date, recordId: res && res.recordId };
+    ql.done.set(aid, d);
+    d.timer = setTimeout(() => { if (ql.done.get(aid) === d && !d.undoing) { ql.done.delete(aid); renderQlPend(aid); } }, QL_UNDO);
+    const a = assignmentById(aid) || {};
+    if (d.recordId) qlNoteEntry({ timeEntryId: d.recordId, assignmentId: aid, assignedTo: a.assignedTo, assignmentName: a.assignmentName, role: a.role, entryDate: p.date, hours: p.hours, kind: "Project" });
+    loadWeek(); refreshDash();
+  } else {
+    // write() put the error in the message; say which tap it was for.
+    msg.insertAdjacentHTML("afterbegin", `<div>${fmtH(p.hours)} h for ${esc(qlName(aid))} on ${esc(fmtDay(p.date))} wasn't logged.</div>`);
+  }
+  renderQlPend(aid);
+}
+
+async function qlUndo(aid) {
+  const d = ql.done.get(aid); if (!d || !d.recordId || d.undoing) return;
+  clearTimeout(d.timer); d.undoing = true; renderQlPend(aid);
+  const msg = $("#qlMsg"); clearMsg(msg);
+  const r = await write("deleteActuals", { timeEntryIds: [d.recordId] }, msg);
+  ql.done.delete(aid);
+  if (r.ok) {
+    showMsg(msg, `Undone: removed <b class="num">${fmtH(d.hours)} h</b> from ${esc(qlName(aid))} on ${esc(fmtDay(d.date))}.`);
+    qlNoteEntry({ timeEntryId: d.recordId, entryDate: d.date }, true);
+    loadWeek(); refreshDash();
+  } else if (r.code === "OTHER_MEFS_POPULATED") {
+    showMsg(msg, `<strong>Resource Hero won't delete that entry</strong> because it also holds planning values. Change or clear its hours in the Entries list instead.`, true);
+  } else {
+    msg.insertAdjacentHTML("afterbegin", `<div>Couldn't undo ${fmtH(d.hours)} h for ${esc(qlName(aid))}.</div>`);
+  }
+  renderQlPend(aid);
+}
+
+$("#qlRows").addEventListener("click", ev => {
+  const row = ev.target.closest("[data-aid]"); if (!row) return;
+  const inc = ev.target.closest("button[data-inc]");
+  if (inc) { qlTap(row.dataset.aid, ql.incs[Number(inc.dataset.inc)]); return; }
+  if (ev.target.closest("button[data-qlcancel]")) qlCancel(row.dataset.aid);
+  if (ev.target.closest("button[data-qlundo]")) qlUndo(row.dataset.aid);
+});
+$("#qlMore").addEventListener("click", ev => { if (ev.target.closest("[data-qlall]")) { ql.all = !ql.all; renderQuickLog(); } });
+
+// ---------- header ----------
+function untilLabel(r) {
+  const today = todayIso(), n = Math.round((parseIso(r.startDate) - parseIso(today)) / 864e5);
+  if (r.startDate <= today) return { text: "Now", soon: true };
+  if (n === 1) return { text: "Tomorrow", soon: true };
+  return { text: n < 14 ? `in ${n} days` : `in ${Math.round(n / 7)} weeks`, soon: n <= 7 };
+}
+function setGreeting() {
+  const h = new Date().getHours();
+  $("#greet").textContent = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  $("#todayLine").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+}
+let refreshing = false;
+async function refreshAll(first) {
+  if (refreshing) return;
+  refreshing = true; $("#refreshAll").disabled = true; $("#freshness").textContent = first ? "Loading…" : "Refreshing…";
+  setGreeting();
+  try {
+    // First call alone, so claude.ai asks for connector permission once; the rest then run together.
+    if (first) await loadSummary();
+    await Promise.all([first ? null : loadSummary(), loadTimeOff(), loadWeek({ keepMsg: !first }), loadAssignments(), loadTimers()]);
+    const t = new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    $("#freshness").textContent = `Up to date · ${t}`;
+  } finally { refreshing = false; $("#refreshAll").disabled = false; }
+}
+$("#refreshAll").addEventListener("click", () => refreshAll(false));
+
+// ---------- nav ----------
+function goWeek(ws) { state.weekStart = ws; state.editingId = null; state.mxSel = null; state.dayFilter = null; loadWeek(); }
+$("#prevWeek").addEventListener("click", () => goWeek(addDays(state.weekStart, -7)));
+$("#nextWeek").addEventListener("click", () => goWeek(addDays(state.weekStart, 7)));
+$("#thisWeek").addEventListener("click", () => goWeek(mondayOf(todayIso())));
+document.addEventListener("click", ev => {
+  if (ev.target.id === "retryWeek") loadWeek();
+  if (ev.target.id === "retryAssign") loadAssignments();
+  if (ev.target.id === "retrySum") loadSummary();
+  if (ev.target.id === "retryOff") loadTimeOff();
+  if (ev.target.id === "retryTm") { clearMsg($("#tmMsg")); loadTimers(); }
+});
+
+// ---------- start ----------
+$("#addDate").value = todayIso();
+renderWeekHeader();
+refreshAll(true);
+</script>
+

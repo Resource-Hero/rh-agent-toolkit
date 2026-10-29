@@ -1,0 +1,34 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "resource-hero",
+  "description": "Resource Hero plugins for Claude (claude.ai, Claude Desktop and Claude Code): log, review and chart your own time, run timers and request time off in Resource Hero.",
+  "owner": {
+    "name": "Resource Hero",
+    "url": "https://www.resourceheroapp.com"
+  },
+  "plugins": [
+    {
+      "name": "rh-connect",
+      "source": "./plugins/rh-connect",
+      "description": "Admin setup and the Claude Code connection for your org's Resource Hero User MCP server (the Resource Hero MCP extension's tools only). Installed with rh-user.",
+      "keywords": [
+        "resource-hero",
+        "salesforce",
+        "mcp",
+        "setup"
+      ]
+    },
+    {
+      "name": "rh-user",
+      "source": "./plugins/rh-user",
+      "description": "Log, correct and review your own time in Resource Hero, the Salesforce-native resource management app, run timers, check your forecast and capacity, request time off, and build a live dashboard of your week, through your org's Resource Hero MCP server.",
+      "keywords": [
+        "resource-hero",
+        "salesforce",
+        "time-tracking",
+        "timesheet",
+        "timer"
+      ]
+    }
+  ]
+}
