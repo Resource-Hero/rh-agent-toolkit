@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 (2026-10-29)
+
+- `rh-user-time-dashboard` 0.16: the timer moves out of the header band to sit beside Quick
+  log, and a new week strip under it shows each day's logged hours against planned; clicking a
+  day makes it the day Quick log logs to. Rebuild the dashboard from a new chat to get the new
+  page.
+
 ## 1.0.0 (2026-10-28)
 
 - First public release, targeting Resource Hero v16.2 and the Resource Hero MCP extension 0.1

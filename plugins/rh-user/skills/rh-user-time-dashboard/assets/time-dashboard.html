@@ -125,12 +125,8 @@ h3 { font-size: 17px; color: var(--plan-ink); }
 .textbtn { background: none; border: 0; padding: 0; color: var(--accent); font-size: 12.5px; }
 .textbtn:hover { text-decoration: underline; }
 @media (max-width: 640px) { .upbox { width: 100%; } }
-/* Coming up and the timer share one row, equal height; the pair drops under the greeting when the row is too narrow for both. */
-@media (min-width: 760px) {
-  .hello-right { flex-wrap: nowrap; align-items: stretch; }
-  .upbox { flex: 0 0 280px; width: auto; }
-  .timerbox { flex: 0 1 430px; width: auto; }
-}
+/* Coming up sits at the right of the greeting and drops under it when the band is too narrow. */
+@media (min-width: 760px) { .upbox { flex: 0 0 300px; width: auto; } }
 .empty { color: var(--muted); font-size: 13px; }
 
 /* chips, messages */
@@ -247,7 +243,8 @@ table.mx { border-collapse: separate; border-spacing: 0; width: 100%; min-width:
 .editbtn:hover { border-color: var(--accent); color: var(--accent); }
 .foot { color: var(--muted); font-size: 12px; text-align: center; }
 /* header timer */
-.timerbox { position: relative; width: min(100%, 440px); min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 8px 8px 8px 12px; display: flex; flex-direction: column; gap: 8px; }
+.timerbox { position: relative; width: auto; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 10px 12px 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.timerbox > .lbl { color: var(--accent); font-size: 10.5px; font-weight: 900; }
 #tmActive:empty { display: none; }
 #tmActive:not(:empty) { border-bottom: 1px solid var(--line); padding-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
 .tmrow { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -282,7 +279,7 @@ span.chipbtn:hover { border-color: var(--line); color: var(--muted); }
 .timerbox > .msg { font-size: 12.5px; padding: 8px 10px; }
 .tmpop { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: min(380px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 12px 32px rgb(0 0 0 / .16); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .tmpop h3 { font-size: 16px; }
-@media (max-width: 640px) { .tmpop { position: static; width: auto; box-shadow: none; } .timerbox { width: 100%; } }
+@media (max-width: 640px) { .tmpop { position: static; width: auto; box-shadow: none; } }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pop); display: inline-block; flex-shrink: 0; animation: pulse 1.6s ease-in-out infinite; }
 .dot.paused { background: var(--muted); animation: none; }
 @keyframes pulse { 50% { opacity: .3; } }
@@ -294,10 +291,15 @@ a.reclink { color: inherit; text-decoration: underline; text-decoration-color: v
 a.reclink:hover { color: var(--accent); text-decoration-color: currentColor; }
 .hello a.reclink { text-decoration-color: rgb(186 220 227 / .45); }
 .hello a.reclink:hover { color: var(--on-navy-2); }
-/* quick log: tap tracking, one row per assignment; a stand-alone card */
+/* quick log: tap tracking, one row per assignment. Shares a row with the timer and the week strip (3:2), which stack under it on narrow screens. */
+.qlpair { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.qlpair:has(#quickLog[hidden]) { grid-template-columns: minmax(0, 1fr); }
+.qlpair:has(#quickLog[hidden]):has(#timerBox[hidden]) { display: none; }
+.sidecol { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+@media (max-width: 900px) { .qlpair { grid-template-columns: minmax(0, 1fr); } }
 .qlrows { display: flex; flex-direction: column; }
 /* one row: name, tap buttons, pending, then the day's logged hours in a fixed right column */
-.qlrow { display: grid; grid-template-columns: minmax(0, 1fr) auto 150px 76px; grid-template-areas: "name btns pend tot"; align-items: center; gap: 8px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.qlrow { display: grid; grid-template-columns: minmax(0, 1fr) auto 132px 72px; grid-template-areas: "name btns pend tot"; align-items: center; gap: 8px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .qlname { grid-area: name; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
 .qlbtns { grid-area: btns; }
 .qltot { grid-area: tot; text-align: right; line-height: 1.2; }
@@ -329,6 +331,25 @@ a.reclink:hover { color: var(--accent); text-decoration-color: currentColor; }
 .qlx:hover { border-color: var(--danger); color: var(--danger); }
 .qlok { color: var(--accent); font-weight: 600; }
 .qlpend .textbtn { font-weight: 700; }
+/* week strip: the Quick log day's week, logged against planned by day; a day is a button that sets the day to log to */
+.wkstrip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.wkday { border: 1px solid transparent; background: none; border-radius: 10px; padding: 6px 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--ink); min-width: 0; }
+.wkday:hover { background: var(--surface-2); }
+.wkday[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.wkday .wl { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.wkday.today .wl { color: var(--accent); font-weight: 900; }
+.wkday .wn { font-size: 13px; font-weight: 700; }
+.wkday .wb { width: 100%; height: 56px; display: flex; align-items: flex-end; justify-content: center; gap: 2px; }
+.wkday .wb i { display: block; width: 9px; border-radius: 3px 3px 0 0; }
+.wkday .wb .p { background: var(--plan-soft); border: 1px solid var(--line); border-bottom: 0; box-sizing: border-box; }
+.wkday .wb .a { background: var(--teal); }
+.wkday .wb .a.over { background: var(--pop); }
+.wkday .wh { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.wkday .wh b { color: var(--ink); }
+.wkday.off .wb i { opacity: .5; }
+.wkleg { display: flex; gap: 14px; font-size: 11.5px; color: var(--muted); }
+.wkleg i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.wkleg .l1 { background: var(--teal); } .wkleg .l2 { background: var(--plan-soft); border: 1px solid var(--line); box-sizing: border-box; }
 /* time off: request form (a popover under Coming up) and cancel */
 .upbox { position: relative; }
 .uplist .x .textbtn { font-size: 12px; }
@@ -373,19 +394,11 @@ a.reclink:hover { color: var(--accent); text-decoration-color: currentColor; }
         <div class="tmpop offpop" id="offPop" hidden></div>
         <p class="rh-help">Your next holidays and time off, soonest first. Hover a line for details. Use Request time off to ask for days off, and Cancel on a request that hasn't been approved yet.</p>
       </section>
-      <section class="timerbox" id="timerBox" aria-label="Timer">
-        <div id="tmActive"></div>
-        <form class="tmpick" id="tmStart" novalidate>
-          <select id="tmAssign" aria-label="Assignment to time"><option value="">Loading your assignments…</option></select>
-        </form>
-        <div class="msg" id="tmMsg" role="status"></div>
-        <div class="tmpop" id="tmPop" hidden></div>
-        <p class="rh-help">Pick an assignment to start a timer. Pause it, stop it to log the time, or use × to throw the time away.</p>
-      </section>
     </div>
   </header>
 
-  <!-- Quick log: tap tracking. A stand-alone card; its script block is "quick log" below. -->
+  <!-- Quick log (tap tracking) with the timer and the week strip beside it. The script blocks are "timer" and "quick log" below. -->
+  <div class="qlpair" id="qlPair">
   <section class="card qlog" id="quickLog" aria-labelledby="qlTitle" hidden>
     <div class="sechead"><h2 id="qlTitle">Quick log</h2>
       <div class="qldate" id="qlDate" role="group" aria-label="Day to log to">
@@ -401,6 +414,25 @@ a.reclink:hover { color: var(--accent); text-decoration-color: currentColor; }
     <div class="qlrows" id="qlRows"><div class="empty">Loading…</div></div>
     <div class="qlbottom"><span id="qlMore"></span><span class="qlfoot" id="qlFoot" aria-live="polite"></span></div>
   </section>
+  <div class="sidecol">
+    <section class="timerbox" id="timerBox" aria-label="Timer">
+      <div class="lbl">Timer</div>
+      <div id="tmActive"></div>
+      <form class="tmpick" id="tmStart" novalidate>
+        <select id="tmAssign" aria-label="Assignment to time"><option value="">Loading your assignments…</option></select>
+      </form>
+      <div class="msg" id="tmMsg" role="status"></div>
+      <div class="tmpop" id="tmPop" hidden></div>
+      <p class="rh-help">Pick an assignment to start a timer. Pause it, stop it to log the time, or use × to throw the time away.</p>
+    </section>
+    <section class="card wk" id="weekStrip" aria-labelledby="wkTitle" hidden>
+      <div class="sechead"><h2 id="wkTitle">This week</h2><span class="sub num" id="wkSub"></span></div>
+      <div class="wkstrip" id="wkDays" role="group" aria-label="Pick a day to log to"></div>
+      <div class="wkleg"><span><i class="l1"></i>Logged</span><span><i class="l2"></i>Planned</span></div>
+      <p class="rh-help">The week of the day you're logging to: hours logged against hours planned, by day. Click a day to log to it.</p>
+    </section>
+  </div>
+  </div>
 
   <!-- The week: heading and tiles, the grid, then the entries ledger whose first row adds an entry. -->
   <div class="grid">
@@ -1411,7 +1443,7 @@ async function qlLoadDay(day) {
   } catch (e) {
     // the totals show – until the next refresh
   } finally { ql.dayBusy.delete(day); }
-  if (day === ql.day) renderQlTotals();
+  if (day === ql.day) renderQlTotals(); else renderWeekStrip();
 }
 async function qlLoadPlan(weeksBack, weeksAhead) {
   const key = weeksBack + "|" + weeksAhead;
@@ -1485,7 +1517,7 @@ document.addEventListener("rh:week", () => {
 
 // ----- rendering -----
 function renderQuickLog() {
-  $("#quickLog").hidden = !ql.show;
+  $("#quickLog").hidden = !ql.show; $("#weekStrip").hidden = !ql.show;
   if (!ql.show) return;
   const day = ql.day;
   renderQlDay();
@@ -1520,7 +1552,35 @@ function renderQlTotals() {
   }
   const tot = list && list.reduce((s, e) => s + num(e.hours), 0), plan = qlPlanned(null, day);
   $("#qlFoot").innerHTML = `Day total <b class="num">${tot == null ? "–" : fmtH(tot) + " h"}</b>${plan ? ` <span class="sub num">of ${fmtH(plan)} h planned</span>` : ""}`;
+  renderWeekStrip();
 }
+
+// The week strip: seven days of the Quick log day's week, logged against planned, each a button that sets the day.
+// Days outside the week on screen are fetched one at a time, like the day's own totals.
+function renderWeekStrip() {
+  if (!ql.show) return;
+  const ws = mondayOf(ql.day), today = todayIso(), days = [];
+  let logged = 0, planned = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(ws, i), l = qlEntries(d), p = qlPlanned(null, d);
+    const lh = l ? l.reduce((a, e) => a + num(e.hours), 0) : null;
+    days.push({ d, lh, p }); logged += lh || 0; planned += p || 0;
+    if (lh == null && ql.weekTried && !qlInWeek(d) && !ql.days.has(d) && d <= today) qlLoadDay(d);
+  }
+  $("#wkTitle").textContent = ws === mondayOf(today) ? "This week" : `${fmtShort(ws)} – ${fmtShort(addDays(ws, 6))}`;
+  $("#wkSub").innerHTML = `<b>${fmtH(logged)} h</b>${planned ? ` of ${fmtH(planned)} h` : ""}`;
+  const max = Math.max(8, ...days.map(x => Math.max(x.lh || 0, x.p || 0)));
+  $("#wkDays").innerHTML = days.map(({ d, lh, p }) => {
+    const dt = parseIso(d), weekend = dt.getDay() % 6 === 0;
+    return `<button type="button" class="wkday${d === today ? " today" : ""}${weekend ? " off" : ""}" data-day="${d}" aria-pressed="${d === ql.day}" title="${esc(fmtDay(d))}">
+      <span class="wl">${esc(dt.toLocaleDateString(undefined, { weekday: "short" }))}</span>
+      <span class="wn num">${dt.getDate()}</span>
+      <span class="wb" aria-hidden="true"><i class="p" style="height:${p ? p / max * 100 : 0}%"></i><i class="a${p && lh > p ? " over" : ""}" style="height:${lh ? lh / max * 100 : 0}%"></i></span>
+      <span class="wh num">${lh == null ? "–" : `<b>${fmtH(lh)}</b>`}${p ? `/${fmtH(p)}` : ""}</span>
+    </button>`;
+  }).join("");
+}
+$("#wkDays").addEventListener("click", ev => { const b = ev.target.closest("[data-day]"); if (b) setQlDay(b.dataset.day); });
 
 // The pending total with its countdown bar and ×, else "Saving…", else "Logged · Undo" (with the day when it isn't the one shown).
 function renderQlPend(aid) {

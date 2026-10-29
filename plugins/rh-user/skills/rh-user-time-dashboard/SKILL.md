@@ -2,7 +2,7 @@
 name: rh-user-time-dashboard
 description: "Build a personal Resource Hero time dashboard: a live Claude page of the user's own week (planned, logged and left-to-log hours, a week grid, an entries list they can add to and edit), a timer, and upcoming holidays and time off. Ships a ready-made page in Resource Hero's colors to publish as is. Use when someone asks for a dashboard, timesheet page, chart, scorecard or saved view of their own time, utilization, capacity or time off, or asks to change their dashboard (remove the help text from my time dashboard, remove the timer). Needs the Resource Hero MCP extension's tools. Not for logging time in chat (use rh-user-log-time) or for team and company reporting (use Salesforce reports)."
 metadata:
-  version: "0.15"
+  version: "0.16"
   product: "Resource Hero"
   productVersion: "16.2"
   domains: ["User"]
@@ -64,10 +64,13 @@ below.
 
 ### What the page shows
 
-- **Header band:** a greeting, the time of the last refresh with a refresh button, **Coming up**
-  (the next holidays and time off, one line each, with **Request time off** and a **Cancel** on
-  requests still Open or Submitted), and the **timer** (the active timer with
-  pause, stop-and-log and discard; picking an assignment starts or resumes a timer on it).
+- **Header band:** a greeting, the time of the last refresh with a refresh button, and **Coming
+  up** (the next holidays and time off, one line each, with **Request time off** and a **Cancel**
+  on requests still Open or Submitted).
+- **Quick log, the timer and the week strip** share the next row (Quick log takes three fifths,
+  the other two stack beside it; on narrow screens all three stack). The **timer** shows the
+  active timer with pause, stop-and-log and discard; picking an assignment starts or resumes a
+  timer on it.
 - **The week**, with previous / this / next week: tiles for **Planned**, **Logged** (with
   billable hours and a progress bar) and **Left to log**; a **grid** of assignments by day,
   shaded by hours; and an **Entries** list (date, assignment, hours, billable, category, notes)
@@ -81,13 +84,14 @@ below.
   shows above the Request button, and pressing Request is the confirmation. The reply's status
   shows in plain words. Cancel asks for confirmation inline; approved time off has no Cancel (the
   user asks their approver).
-- **Quick log:** its own card under the header, for tap tracking as in Resource Hero. Each open
+- **Quick log:** a card for tap tracking as in Resource Hero. Each open
   assignment has a row of the user's own tap buttons (such as 15min, 1hr, 4hr, from their
   Resource Hero settings). Each tap adds to a pending total with a countdown and a × to cancel;
   1.5 seconds after the last tap, the total saves as one entry. After a save, Undo deletes the
   entry for about 10 seconds.
   - **The day:** a date control by the title (‹ previous day, the date, › next day, and Today
-    when it's another day) sets the day taps log to. Picking a cell in the grid sets it too.
+    when it's another day) sets the day taps log to. Picking a cell in the grid, or a day in the
+    week strip, sets it too.
     Changing the day first saves any pending taps to the day they were tapped on. Future days
     are allowed; Resource Hero's rules decide.
   - **Totals:** each row ends with that assignment's hours logged on the day, in a right-hand
@@ -96,8 +100,14 @@ below.
     saves count as soon as they land.
   - **Order:** rows planned for the day come first; past five rows, the rest sit behind "Show
     all".
-  - The card is hidden when the user has tap tracking off or no tap buttons. The timer is hidden
-    when the user's timer is off.
+  - **The week strip:** under the timer, the week of the day being logged to: seven day
+    columns, each a bar of logged hours against planned (orange when over), the figures under
+    it, the selected day outlined and today's label in teal, with the week's logged and planned
+    totals by the title. Clicking a day sets the Quick log day. Days outside the week shown in
+    the grid are fetched one at a time, like the day totals.
+  - The card and the week strip are hidden when the user has tap tracking off or no tap
+    buttons. The timer is hidden when the user's timer is off; when both are hidden the row
+    disappears.
 - **Record links:** each assignment's project or opportunity name (grid, entries, timer, Quick
   log) opens that record in Salesforce in a new tab, and the user's name in the greeting opens
   their Resource record. Names stay plain text when the reply has no org URL or Id.
@@ -130,8 +140,10 @@ break the page; hide it instead and keep its code:
 - **Timer:** in `loadAssignments`, change `$("#timerBox").hidden = out.showTimer === false;` to
   `$("#timerBox").hidden = true;`.
 - **Quick log:** the card starts hidden; delete the `setQuickLog(out);` line in
-  `loadAssignments` so it never shows. To remove it outright, also delete its card and its
-  `// ---------- quick log ----------` script block.
+  `loadAssignments` so it never shows (the week strip goes with it). To remove it outright, also
+  delete its card and its `// ---------- quick log ----------` script block.
+- **Week strip only:** in `renderQuickLog`, change `$("#weekStrip").hidden = !ql.show;` to
+  `$("#weekStrip").hidden = true;`.
 
 Then republish to the same URL.
 
@@ -150,7 +162,7 @@ tool by the action name in it, ignoring case; this skill uses the camelCase form
 | Request and cancel time off | `requestTimeOff` {startDate, endDate, hoursPerDay, type, description}, `cancelTimeOff` {timeOffRequestId} |
 | Hours per day in the request form (only when the form opens) | `getMyCapacity` {weeksBack: 0, weeksAhead: 12} |
 | Quick log's planned hours | `getMyForecast` {weeksBack: 0, weeksAhead: 1}; for another day, a window that covers its week (up to 26 weeks either way; beyond that, no plan) |
-| Quick log's logged hours for a day outside the week shown | `getMyTrackedTime` {startDate: day, endDate: day}, cached until the next save, undo or refresh |
+| Quick log's logged hours for a day outside the week shown, and the week strip's bars for such days | `getMyTrackedTime` {startDate: day, endDate: day}, cached until the next save, undo or refresh |
 | Week grid, entries list, Logged tile | `getMyTrackedTime` {startDate, endDate} for the week shown (or {daysBack: 7}) |
 | Add, edit, delete entries | `insertActuals`, `updateActuals`, `deleteActuals` |
 | Quick log saves and Undo | `insertActuals` {entries: [{assignmentId, entryDate, hours}]}, billable left to the org default; Undo is `deleteActuals` {timeEntryIds: [the reply's `results[0].recordId`]} |

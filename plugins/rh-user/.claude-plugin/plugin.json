@@ -1,7 +1,7 @@
 {
   "name": "rh-user",
   "displayName": "Resource Hero",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Log, correct and review your own time in Resource Hero, the Salesforce-native resource management app, run timers, check your forecast and capacity, request time off, and build a live dashboard of your week, through your org's Resource Hero MCP server.",
   "author": {
     "name": "Resource Hero",
