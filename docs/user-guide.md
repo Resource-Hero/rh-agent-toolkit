@@ -87,12 +87,14 @@ your Resource Hero time live, as you:
 - **Coming up:** your next holidays and time off. **+ Request time off** asks for days off;
   hours per day start from your capacity. **Cancel** appears on requests that aren't approved
   yet.
-- **Timer:** start a timer by picking an assignment; pause it, stop it to log the time, or
-  throw it away. Starting a new timer pauses the running one.
 - **Quick log:** tap buttons (your own increments from Resource Hero, such as 15min, 1hr, 4hr)
   to log time on an assignment. Taps add up and save as one entry a moment after the last one,
   with an Undo. Each row shows what's logged that day against what's planned, and you can
   change the day.
+- **Timer:** beside Quick log. Start a timer by picking an assignment; pause it, stop it to log
+  the time, or throw it away. Starting a new timer pauses the running one.
+- **This week:** under the timer, one bar per day of hours logged against hours planned, with
+  the week's totals. Click a day to make it the day Quick log logs to.
 - **The week:** planned, logged and left-to-log hours, a grid of your hours by assignment and
   day, and every entry, which you can add to, edit or delete. Holidays, time off, and locked or
   archived assignments show their hours but can't take new time. Names link to the records in

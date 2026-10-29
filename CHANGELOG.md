@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 (2026-10-29)
+
+- Docs only: the user guide's dashboard section now matches the 0.16 page (Quick log, the timer
+  beside it, the week strip under that, then the week).
+
 ## 1.0.1 (2026-10-29)
 
 - `rh-user-time-dashboard` 0.16: the timer moves out of the header band to sit beside Quick
